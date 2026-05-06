@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Kütüphane</title>
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#7a5230" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#16110d" media="(prefers-color-scheme: dark)" />
+  <meta name="application-name" content="Kütüphane" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kütüphane" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="msapplication-TileColor" content="#7a5230" />
+  <meta name="msapplication-TileImage" content="icons/icon-192.png" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#/" class="brand" aria-label="Ana sayfa">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="brand-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
+              <stop offset="100%" stop-color="currentColor" stop-opacity="0.04"/>
+            </linearGradient>
+          </defs>
+          <!-- Sol sayfa -->
+          <path d="M4 7 C4 6.2 4.7 5.5 5.5 5.5 L15 5.5 L15 26.5 L5.5 26.5 C4.7 26.5 4 25.8 4 25 Z"
+                fill="url(#brand-grad)" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- Sağ sayfa -->
+          <path d="M28 7 C28 6.2 27.3 5.5 26.5 5.5 L17 5.5 L17 26.5 L26.5 26.5 C27.3 26.5 28 25.8 28 25 Z"
+                fill="url(#brand-grad)" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- Cilt sırtı -->
+          <path d="M16 5.5 L16 26.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <!-- Sayfa satırları -->
+          <g stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.55">
+            <path d="M7 10.5 L12.5 10.5"/>
+            <path d="M7 14 L12.5 14"/>
+            <path d="M7 17.5 L11.5 17.5"/>
+            <path d="M19.5 10.5 L25 10.5"/>
+            <path d="M19.5 14 L25 14"/>
+            <path d="M19.5 17.5 L23.5 17.5"/>
+          </g>
+          <!-- Kitap ayracı -->
+          <path d="M21 5.5 L21 12 L22.25 11 L23.5 12 L23.5 5.5 Z" fill="currentColor"/>
+        </svg>
+        <span class="brand-text">Kütüphane</span>
+      </a>
+
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input id="search" type="search" placeholder="Kitap veya koleksiyon ara…" autocomplete="off" />
+      </div>
+
+      <button id="theme-toggle" class="theme-toggle" aria-label="Temayı değiştir" title="Tema">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="app" class="container"></main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>Kişisel Kütüphane</span>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((e) => console.warn("SW register failed:", e));
+      });
+    }
+  </script>
+</body>
+</html>
