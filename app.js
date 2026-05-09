@@ -499,6 +499,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
           </button>
           <button class="pdf-btn pdf-btn-text" id="pdf-fit" title="Genişliğe sığdır">Sığdır</button>
+          <span class="pdf-sep"></span>
+          <button class="pdf-btn" id="pdf-night" title="Gece modu (göz dostu)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
         </div>
         <div class="pdf-container" id="pdf-container">
           <canvas id="pdf-canvas"></canvas>
@@ -620,6 +624,22 @@
     };
     document.getElementById("pdf-fit").onclick = () => {
       fitMode = "width"; renderPage();
+    };
+
+    // Gece modu (PDF rengini ters çevir) — global tercih
+    const NIGHT_KEY = "kutuphane-pdf-night";
+    const nightBtn = document.getElementById("pdf-night");
+    let nightOn = localStorage.getItem(NIGHT_KEY) === "1";
+    const applyNight = () => {
+      canvas.classList.toggle("pdf-night", nightOn);
+      nightBtn.classList.toggle("is-active", nightOn);
+      nightBtn.title = nightOn ? "Gece modu açık (kapatmak için tıkla)" : "Gece modu (göz dostu)";
+    };
+    applyNight();
+    nightBtn.onclick = () => {
+      nightOn = !nightOn;
+      try { localStorage.setItem(NIGHT_KEY, nightOn ? "1" : "0"); } catch (_) {}
+      applyNight();
     };
 
     const onKey = (e) => {

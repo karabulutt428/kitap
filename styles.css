@@ -841,6 +841,19 @@ main { padding: 40px 28px 80px; }
   transition: width .4s ease;
 }
 
+/* ---------- PDF gece modu ---------- */
+#pdf-canvas.pdf-night {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95);
+}
+.pdf-btn.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+[data-theme="dark"] .pdf-btn.is-active {
+  color: #1a140f;
+}
+
 /* ---------- Etiket çubuğu ---------- */
 .tag-bar {
   display: flex;
