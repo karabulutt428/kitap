@@ -119,51 +119,32 @@ const LIBRARY_DATA = {
       ]
     },
     {
-      id: "saftirik",
-      title: "Saftirik Serisi",
-      author: "Jeff Kinney",
-      description: "Greg Heffley'in komik ve sıra dışı günlüklerinden oluşan, çocuklar ve gençler için sevilen mizah serisi.",
-      accent: "#c0392b",
-      folder: "kitaplar/saftirik-serisi",
-      coverFolder: "kitaplar/saftirik-serisi/kapaklar",
-      books: [
-        {
-          id: "saftirik1",
-          title: "Greg'in Günlüğü",
-          subtitle: "Saftirik - Greg'in Günlüğü 1",
-          number: 1,
-          file: "saftirik-1.pdf",
-          cover: "saftirik-1.jpg"
-        }
-      ]
-    },
-    {
       id: "yuzuklerin-efendisi",
       title: "Yüzüklerin Efendisi",
       author: "J.R.R. Tolkien",
-      description: "Orta Dünya'nın efsanevi destanı: Hobbit'ten Silmarillion'a uzanan Tolkien evreninin başyapıtları.",
+      description: "Orta Dünya'nın efsanevi destanı: Yüzüklerin Efendisi üçlemesi tek ciltte, Hobbit ve Silmarillion ile birlikte Tolkien evreninin başyapıtları.",
       accent: "#3a5a40",
       folder: "kitaplar/yuzuklerin-efendisi",
       coverFolder: "kitaplar/yuzuklerin-efendisi/kapaklar",
       books: [
         {
+          id: "yuzuklerin-efendisi-tekcilt",
+          title: "Yüzüklerin Efendisi",
+          subtitle: "Yüzüklerin Efendisi - Tek Cilt (Üçleme)",
+          file: "J.R.R.-Tolkien-Yuzuklerin-Efendisi_compressed.pdf",
+          cover: "tekcilt.jpg"
+        },
+        {
           id: "hobbit",
           title: "Hobbit",
-          subtitle: "Hobbit ya da Gittik ve Döndük",
+          subtitle: "Hobbit ya da Gittik ve Döndük - J.R.R. Tolkien",
           file: "hobbit.pdf",
           cover: "hobbit.jpg"
         },
         {
-          id: "iki-kule",
-          title: "İki Kule",
-          subtitle: "Yüzüklerin Efendisi - İki Kule",
-          file: "iki-kule.pdf",
-          cover: "iki-kule.jpg"
-        },
-        {
           id: "silmarillion",
           title: "Silmarillion",
-          subtitle: "Silmarillion",
+          subtitle: "Silmarillion - J.R.R. Tolkien",
           file: "silmarillion.pdf",
           cover: "silmarillion.jpg"
         }
@@ -247,6 +228,62 @@ const LIBRARY_DATA = {
           subtitle: "Atomik Alışkanlıklar - James Clear",
           file: "atomik-aliskanliklar.pdf",
           cover: "atomik-aliskanliklar.jpg"
+        },
+        {
+          id: "fahrenheit-451",
+          title: "Fahrenheit 451",
+          subtitle: "Fahrenheit 451 - Ray Bradbury",
+          file: "Fahrenheit 451.pdf",
+          cover: "fahrenheit451.webp"
+        },
+        {
+          id: "bir-idam-mahkumunun-son-gunu",
+          title: "Bir İdam Mahkumunun Son Günü",
+          subtitle: "Bir İdam Mahkumunun Son Günü - Victor Hugo",
+          file: "bir-idam-mahkumunun-son-günü.pdf",
+          cover: "idam makumu son günü.jpg"
+        },
+        {
+          id: "fareler-ve-insanlar",
+          title: "Fareler ve İnsanlar",
+          subtitle: "Fareler ve İnsanlar - John Steinbeck",
+          file: "fareler-ve-insanlar.pdf",
+          cover: "fareler ve insanlar.webp"
+        },
+        {
+          id: "hamlet",
+          title: "Hamlet",
+          subtitle: "Hamlet - William Shakespeare",
+          file: "hamlet.pdf",
+          cover: "hamlet.jpg"
+        },
+        {
+          id: "masumiyet-muzesi",
+          title: "Masumiyet Müzesi",
+          subtitle: "Masumiyet Müzesi - Orhan Pamuk",
+          file: "masumiyet-müzesi.pdf",
+          cover: "masumiyet müzesi.jpg"
+        },
+        {
+          id: "psikiyatrist",
+          title: "Psikiyatrist",
+          subtitle: "Psikiyatrist - Machado de Assis",
+          file: "pisikiyatrist.pdf",
+          cover: "pisikiyatrist.jpg"
+        },
+        {
+          id: "yasamak",
+          title: "Yaşamak",
+          subtitle: "Yaşamak - Yu Hua",
+          file: "yasamak.pdf",
+          cover: "yaşamak.webp"
+        },
+        {
+          id: "dokunmadan",
+          title: "Dokunmadan",
+          subtitle: "Dokunmadan",
+          file: "dokunmadan.pdf",
+          cover: "dokunmadan.jpg"
         }
       ]
     }

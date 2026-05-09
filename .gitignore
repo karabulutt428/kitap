@@ -1,0 +1,15 @@
+# PDF dosyaları (Releases üzerinden host edilecek)
+*.pdf
+
+# Sistem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editör
+.vscode/
+.idea/
+*.swp
+
+# Claude worktrees
+.claude/worktrees/
