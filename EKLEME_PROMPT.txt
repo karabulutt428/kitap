@@ -1,0 +1,87 @@
+================================================================
+KITAP EKLEME PROMPT — Compact sonrası Claude'a kopyala-yapıştır
+================================================================
+
+Aşağıdaki bloğu olduğu gibi kopyala, "Eklenecek kitap(lar)" kısmını
+kendi kitabınla doldurup gönder.
+
+----------------------------------------------------------------
+PROMPT BAŞLANGICI:
+----------------------------------------------------------------
+
+Bu repo: github.com/karabulutt428/kitap (sahibi: karabulutt428)
+Lokal yol: C:\Users\msi\Desktop\kitap
+PDF'ler repo içinde host ediliyor (Releases değil).
+Yapı:
+  - PDF:   kitaplar/<koleksiyon>/<dosya>.pdf
+  - Kapak: kitaplar/<koleksiyon>/kapaklar/<dosya>.jpg
+data.js'de 4 koleksiyon var: harry-potter, kutsal-kitaplar,
+yuzuklerin-efendisi, tekli-kitaplar.
+
+Yeni kitap eklemeni istiyorum. Dosyaları bilgisayara yerleştirdim.
+
+Eklenecek kitap(lar):
+
+1) Koleksiyon: tekli-kitaplar
+   Başlık: <KITAP ADI>
+   Yazar: <YAZAR>
+   PDF dosyası: <DOSYA-ADI>.pdf
+   Kapak dosyası: <DOSYA-ADI>.jpg
+
+(Birden fazla kitap için yukarıyı kopyala)
+
+Senden istediklerim:
+1. Dosyaların gerçekten o yolda olduğunu Glob/Bash ile doğrula.
+2. data.js'e yeni kitap girişini ekle (id, title, subtitle, file,
+   cover alanlarıyla, mevcut format gibi). Mevcut tekli-kitaplar
+   bloğunun en sonuna ekle.
+3. git add + commit + push (commit mesajı: "Add: <kitap adları>").
+4. Sorun varsa (dosya yok, isim yanlış vs.) sormadan devam etme,
+   durdur ve sor.
+
+----------------------------------------------------------------
+PROMPT SONU
+----------------------------------------------------------------
+
+
+YENİ KOLEKSİYON eklemek istersen yukarıdaki prompt'a şunu ekle:
+----------------------------------------------------------------
+
+YENI KOLEKSIYON oluşturulacak:
+   Klasör adı (URL-safe, küçük harf): <ornek: stephen-king>
+   Başlık: <Stephen King Serisi>
+   Yazar: <Stephen King>
+   Açıklama: <kısa açıklama>
+   Accent rengi (hex): <#5b3a8a>
+
+----------------------------------------------------------------
+
+
+ÖRNEK DOLU PROMPT:
+----------------------------------------------------------------
+
+Bu repo: github.com/karabulutt428/kitap ...
+[üst kısım aynı]
+
+Eklenecek kitap(lar):
+
+1) Koleksiyon: tekli-kitaplar
+   Başlık: Suç ve Ceza
+   Yazar: Dostoyevski
+   PDF dosyası: suc-ve-ceza.pdf
+   Kapak dosyası: suc-ve-ceza.jpg
+
+2) Koleksiyon: tekli-kitaplar
+   Başlık: Karamazov Kardeşler
+   Yazar: Dostoyevski
+   PDF dosyası: karamazov.pdf
+   Kapak dosyası: karamazov.jpg
+
+----------------------------------------------------------------
+
+
+NOT:
+- Dosya isimlerinde Türkçe karakter (ç, ğ, ı, ö, ş, ü) ve boşluk
+  KULLANMA. Örnek: "suç ve ceza.pdf" yerine "suc-ve-ceza.pdf".
+- Kapak için .jpg, .png veya .webp kullanabilirsin.
+- Site adresi: https://karabulutt428.github.io/kitap/
