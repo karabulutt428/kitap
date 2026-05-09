@@ -63,6 +63,87 @@
     return c ? { collection: c, book: c.books.find(b => b.id === bid) } : null;
   };
 
+  /* ---------- Okuma ilerlemesi (storage) ---------- */
+  const PROGRESS_PREFIX = "kutuphane-progress-";
+  const LEGACY_PAGE_PREFIX = "kutuphane-page-";
+
+  function progressKey(cid, bid) { return `${PROGRESS_PREFIX}${cid}__${bid}`; }
+  function legacyKey(cid, bid) { return `${LEGACY_PAGE_PREFIX}${cid}-${bid}`; }
+
+  function getProgress(cid, bid) {
+    try {
+      const raw = localStorage.getItem(progressKey(cid, bid));
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (obj && typeof obj === "object" && obj.page) return obj;
+      }
+    } catch (_) {}
+    // legacy fallback
+    const legacy = localStorage.getItem(legacyKey(cid, bid));
+    if (legacy) {
+      const page = parseInt(legacy, 10);
+      if (page > 0) return { page, total: 0, time: 0 };
+    }
+    return null;
+  }
+
+  function setProgress(cid, bid, page, total) {
+    try {
+      const obj = { page: page || 1, total: total || 0, time: Date.now() };
+      localStorage.setItem(progressKey(cid, bid), JSON.stringify(obj));
+      // legacy key'i de güncelle (eski reader uyumluluğu için)
+      localStorage.setItem(legacyKey(cid, bid), String(page || 1));
+    } catch (_) {}
+  }
+
+  function getRecentReads(limit = 8) {
+    const items = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(PROGRESS_PREFIX)) continue;
+      const idPart = key.slice(PROGRESS_PREFIX.length);
+      const sep = idPart.indexOf("__");
+      if (sep < 0) continue;
+      const cid = idPart.slice(0, sep);
+      const bid = idPart.slice(sep + 2);
+      const found = findBook(cid, bid);
+      if (!found || !found.book) continue;
+      let progress;
+      try { progress = JSON.parse(localStorage.getItem(key)); } catch (_) { continue; }
+      if (!progress || !progress.page) continue;
+      items.push({ collection: found.collection, book: found.book, progress });
+    }
+    // Eski (legacy) anahtarları da topla — sadece yeni anahtarda olmayanları
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(LEGACY_PAGE_PREFIX)) continue;
+      const idPart = key.slice(LEGACY_PAGE_PREFIX.length);
+      // legacy format: kutuphane-page-cid-bid (cid de bid de tire içerebilir)
+      // Koleksiyon id'sine göre split et
+      let matched = null;
+      for (const c of data.collections) {
+        if (idPart.startsWith(c.id + "-")) {
+          const bidPart = idPart.slice(c.id.length + 1);
+          const book = c.books.find(b => b.id === bidPart);
+          if (book) { matched = { collection: c, book }; break; }
+        }
+      }
+      if (!matched) continue;
+      // Aynı kitap zaten yeni format'tan eklenmişse atla
+      if (items.some(x => x.collection.id === matched.collection.id && x.book.id === matched.book.id)) continue;
+      const page = parseInt(localStorage.getItem(key), 10);
+      if (!page || page < 1) continue;
+      items.push({ collection: matched.collection, book: matched.book, progress: { page, total: 0, time: 0 } });
+    }
+    items.sort((a, b) => (b.progress.time || 0) - (a.progress.time || 0));
+    return items.slice(0, limit);
+  }
+
+  function progressPercent(progress) {
+    if (!progress || !progress.total || progress.total < 1) return 0;
+    return Math.min(100, Math.round((progress.page / progress.total) * 100));
+  }
+
   /* ---------- Görünümler ---------- */
   function viewHome(query = "") {
     const q = query.trim().toLowerCase();
@@ -98,6 +179,18 @@
            <p>Koleksiyonlarda gezin, bir kitap aç ve okumaya başla.</p>
          </div>`;
 
+    const recents = q ? [] : getRecentReads(8);
+    const continueHtml = recents.length ? `
+      <section class="continue-section">
+        <div class="section-head">
+          <h2>Okumaya Devam Et</h2>
+          <span class="muted">${recents.length} kitap</span>
+        </div>
+        <div class="continue-grid">
+          ${recents.map(renderContinueCard).join("")}
+        </div>
+      </section>` : "";
+
     const collectionsHtml = collections.length ? `
       <section>
         <div class="section-head">
@@ -120,7 +213,7 @@
         </div>
       </section>` : "";
 
-    return heading + collectionsHtml + bookHitsHtml;
+    return heading + continueHtml + collectionsHtml + bookHitsHtml;
   }
 
   function bookCoverUrl(collection, book) {
@@ -167,12 +260,43 @@
           ${book.number ? `<div class="book-number">${escapeHtml(String(book.number).padStart(2, "0"))}</div>` : `<div class="book-number">·</div>`}
           <div class="book-title">${escapeHtml(book.title)}</div>
         </div>`;
+    const progress = getProgress(collection.id, book.id);
+    const pct = progressPercent(progress);
+    const progressBar = (progress && progress.page > 1)
+      ? `<div class="book-progress" title="${pct ? `%${pct} okundu` : `Sayfa ${progress.page}`}">
+           <div class="book-progress-fill" style="width:${pct || 8}%"></div>
+         </div>`
+      : "";
     return `
       <a class="book-card" href="#/oku/${encodeURIComponent(collection.id)}/${encodeURIComponent(book.id)}">
         ${cover}
+        ${progressBar}
         <div class="book-info">
           <p class="name">${escapeHtml(book.title)}</p>
           <p class="sub">${escapeHtml(collection.title)}</p>
+        </div>
+      </a>`;
+  }
+
+  function renderContinueCard({ collection, book, progress }) {
+    const coverUrl = bookCoverUrl(collection, book);
+    const pct = progressPercent(progress);
+    const subtitle = pct
+      ? `%${pct} · sayfa ${progress.page}${progress.total ? " / " + progress.total : ""}`
+      : `Sayfa ${progress.page}`;
+    const cover = coverUrl
+      ? `<img class="continue-cover-img cover-img" src="${coverUrl}" alt="${escapeHtml(book.title)}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.classList.add('failed')" />`
+      : `<div class="continue-cover-fallback">${escapeHtml(book.title)}</div>`;
+    return `
+      <a class="continue-card" href="#/oku/${encodeURIComponent(collection.id)}/${encodeURIComponent(book.id)}">
+        <div class="continue-cover">${cover}</div>
+        <div class="continue-meta">
+          <p class="continue-title">${escapeHtml(book.title)}</p>
+          <p class="continue-sub">${escapeHtml(collection.title)}</p>
+          <div class="continue-progress" aria-label="${subtitle}">
+            <div class="continue-progress-fill" style="width:${pct || 6}%"></div>
+          </div>
+          <p class="continue-pct">${subtitle}</p>
         </div>
       </a>`;
   }
@@ -281,7 +405,18 @@
     const ctx = canvas.getContext("2d");
 
     let pdf = null;
-    let currentPage = parseInt(localStorage.getItem(storageKey) || "1", 10) || 1;
+    // storageKey formatı: "kutuphane-page-{cid}-{bid}". Yeni progress sisteminden de oku.
+    const skParts = storageKey.replace(/^kutuphane-page-/, "");
+    let progressCid = null, progressBid = null;
+    for (const c of data.collections) {
+      if (skParts.startsWith(c.id + "-")) {
+        const bidPart = skParts.slice(c.id.length + 1);
+        const book = c.books.find(b => b.id === bidPart);
+        if (book) { progressCid = c.id; progressBid = book.id; break; }
+      }
+    }
+    const initialProgress = (progressCid && progressBid) ? getProgress(progressCid, progressBid) : null;
+    let currentPage = (initialProgress && initialProgress.page) || parseInt(localStorage.getItem(storageKey) || "1", 10) || 1;
     let scale = 1;
     let fitMode = "width";
     let renderTask = null;
@@ -340,6 +475,9 @@
       pageInput.value = currentPage;
       zoomLabel.textContent = "%" + Math.round(scale * 100);
       localStorage.setItem(storageKey, String(currentPage));
+      if (progressCid && progressBid) {
+        setProgress(progressCid, progressBid, currentPage, pdf.numPages);
+      }
     }
 
     function go(delta) {

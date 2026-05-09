@@ -725,6 +725,122 @@ main { padding: 40px 28px 80px; }
   }
 }
 
+/* ---------- Okumaya Devam Et ---------- */
+.continue-section { margin-bottom: 48px; }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.continue-card {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  align-items: stretch;
+  min-height: 130px;
+}
+.continue-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+.continue-cover {
+  flex: 0 0 70px;
+  width: 70px;
+  height: 105px;
+  border-radius: 4px 6px 6px 4px;
+  overflow: hidden;
+  background: #1a140f;
+  box-shadow: var(--shadow-sm);
+  align-self: center;
+  position: relative;
+}
+.continue-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.continue-cover-img.loaded { opacity: 1; }
+.continue-cover-img.failed { display: none; }
+.continue-cover-fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 12px;
+  padding: 6px;
+  color: #f0e3cd;
+  background: linear-gradient(135deg, #5b3a20, #8b5a2b);
+}
+.continue-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.continue-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.continue-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.continue-progress {
+  margin-top: 8px;
+  height: 4px;
+  background: color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.continue-progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--accent), var(--accent-soft));
+  border-radius: 4px;
+  transition: width .4s ease;
+}
+.continue-pct {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- Kitap kartı ilerleme çubuğu ---------- */
+.book-progress {
+  margin-top: 8px;
+  height: 3px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.book-progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--accent), var(--accent-soft));
+  border-radius: 3px;
+  transition: width .4s ease;
+}
+
 /* Hareket azaltma tercihi */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
