@@ -179,11 +179,54 @@
     return out;
   }
 
+  /* ---------- Etiketler / filtreler ---------- */
+  let activeTag = null; // null = "Tümü"
+
+  function bookTags(collection, book) {
+    return (book.tags && book.tags.length) ? book.tags : (collection.tags || []);
+  }
+
+  function getAllTags() {
+    const set = new Set();
+    data.collections.forEach(c => {
+      (c.tags || []).forEach(t => set.add(t));
+      (c.books || []).forEach(b => (b.tags || []).forEach(t => set.add(t)));
+    });
+    return Array.from(set).sort();
+  }
+
+  const TAG_LABELS = {
+    "fantastik": "Fantastik",
+    "roman": "Roman",
+    "seri": "Seri",
+    "klasik": "Klasik",
+    "dini": "Dini",
+    "distopya": "Distopya",
+    "çocuk": "Çocuk",
+    "felsefe": "Felsefe",
+    "kişisel-gelişim": "Kişisel Gelişim",
+    "tiyatro": "Tiyatro"
+  };
+  const tagLabel = (t) => TAG_LABELS[t] || (t.charAt(0).toUpperCase() + t.slice(1));
+
   /* ---------- Görünümler ---------- */
   function viewHome(query = "") {
     const q = query.trim().toLowerCase();
     let collections = data.collections;
     let bookHits = [];
+
+    // Etiket filtresi (arama yokken aktif)
+    if (!q && activeTag) {
+      collections = data.collections.filter(c => (c.tags || []).includes(activeTag));
+      // Kitap bazlı tag'le eşleşenler de gösterilebilir (koleksiyon dışı)
+      data.collections.forEach(c => {
+        c.books.forEach(b => {
+          if (b.tags && b.tags.includes(activeTag) && !(c.tags || []).includes(activeTag)) {
+            bookHits.push({ collection: c, book: b });
+          }
+        });
+      });
+    }
 
     if (q) {
       collections = data.collections.filter(c =>
@@ -207,12 +250,22 @@
         </div>`;
     }
 
+    if (!q && activeTag && collections.length === 0 && bookHits.length === 0) {
+      return renderTagBar() + `
+        <div class="empty">
+          <h3>Sonuç bulunamadı</h3>
+          <p>"${escapeHtml(tagLabel(activeTag))}" etiketine sahip kitap yok.</p>
+        </div>`;
+    }
+
     const heading = q
       ? `<div class="page-head"><h1>Arama Sonuçları</h1><p>"${escapeHtml(query)}" için bulunanlar.</p></div>`
       : `<div class="page-head">
            <h1>Kütüphanem</h1>
            <p>Koleksiyonlarda gezin, bir kitap aç ve okumaya başla.</p>
          </div>`;
+
+    const tagBarHtml = q ? "" : renderTagBar();
 
     const recents = q ? [] : getRecentReads(8);
     const continueHtml = recents.length ? `
@@ -260,7 +313,17 @@
         </div>
       </section>` : "";
 
-    return heading + continueHtml + favsHtml + collectionsHtml + bookHitsHtml;
+    return heading + tagBarHtml + continueHtml + favsHtml + collectionsHtml + bookHitsHtml;
+  }
+
+  function renderTagBar() {
+    const tags = getAllTags();
+    if (tags.length === 0) return "";
+    const pills = [
+      `<button class="tag-pill ${activeTag === null ? "is-active" : ""}" data-tag="">Tümü</button>`,
+      ...tags.map(t => `<button class="tag-pill ${activeTag === t ? "is-active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(tagLabel(t))}</button>`)
+    ].join("");
+    return `<div class="tag-bar" role="tablist" aria-label="Etiket filtresi">${pills}</div>`;
   }
 
   function bookCoverUrl(collection, book) {
@@ -673,6 +736,22 @@
   });
 
   window.addEventListener("hashchange", render);
+
+  // Etiket pill tıklama (delegated)
+  document.addEventListener("click", (e) => {
+    const pill = e.target.closest && e.target.closest(".tag-pill");
+    if (!pill) return;
+    e.preventDefault();
+    const tag = pill.dataset.tag || "";
+    activeTag = tag || null;
+    if (location.hash !== "#/" && location.hash !== "" && location.hash !== "#") {
+      location.hash = "#/";
+    } else {
+      render();
+      // Üst tarafa kaydır - filtre çubuğu görünür kalsın
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
 
   // Favori butonu tıklama (delegated)
   document.addEventListener("click", (e) => {

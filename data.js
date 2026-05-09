@@ -10,6 +10,7 @@ const LIBRARY_DATA = {
       author: "J.K. Rowling",
       description: "Büyücülük dünyasının kapılarını aralayan, dostluk, cesaret ve sihirle dolu sekiz kitaplık efsanevi seri.",
       accent: "#7a5230",
+      tags: ["fantastik", "roman", "seri"],
       folder: "kitaplar/harry-potter-serisi",
       coverFolder: "kitaplar/harry-potter-serisi/kapaklar",
       books: [
@@ -85,6 +86,7 @@ const LIBRARY_DATA = {
       author: "Semavi Dinler",
       description: "Üç büyük semavi dinin temel metinleri: Kur'an-ı Kerim Meali, Tevrat, Zebur ve İncil Meali.",
       accent: "#2f5d3a",
+      tags: ["dini"],
       folder: "kitaplar/kutsal-kitaplar",
       coverFolder: "kitaplar/kutsal-kitaplar/kapaklar",
       books: [
@@ -124,6 +126,7 @@ const LIBRARY_DATA = {
       author: "J.R.R. Tolkien",
       description: "Orta Dünya'nın efsanevi destanı: Yüzüklerin Efendisi üçlemesi tek ciltte, Hobbit ve Silmarillion ile birlikte Tolkien evreninin başyapıtları.",
       accent: "#3a5a40",
+      tags: ["fantastik", "roman", "klasik"],
       folder: "kitaplar/yuzuklerin-efendisi",
       coverFolder: "kitaplar/yuzuklerin-efendisi/kapaklar",
       books: [
@@ -156,6 +159,7 @@ const LIBRARY_DATA = {
       author: "Çeşitli Yazarlar",
       description: "Dünya edebiyatından seçme tek ciltlik klasikler ve modern eserler.",
       accent: "#5b3a8a",
+      tags: ["klasik"],
       folder: "kitaplar/tekli-kitaplar",
       coverFolder: "kitaplar/tekli-kitaplar/kapaklar",
       books: [

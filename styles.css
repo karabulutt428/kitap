@@ -841,6 +841,41 @@ main { padding: 40px 28px 80px; }
   transition: width .4s ease;
 }
 
+/* ---------- Etiket çubuğu ---------- */
+.tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding-bottom: 4px;
+}
+.tag-pill {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .18s ease;
+  user-select: none;
+}
+.tag-pill:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.tag-pill.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+[data-theme="dark"] .tag-pill.is-active {
+  color: #1a140f;
+}
+
 /* ---------- Favori butonu ---------- */
 .book-card-wrap {
   position: relative;
