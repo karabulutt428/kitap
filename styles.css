@@ -826,6 +826,27 @@ main { padding: 40px 28px 80px; }
   letter-spacing: 0.3px;
 }
 
+/* ---------- Kitap meta verileri ---------- */
+.book-meta {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reader-meta {
+  margin: 6px 0 0 !important;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Kitap kartı ilerleme çubuğu ---------- */
 .book-progress {
   margin-top: 8px;

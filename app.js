@@ -144,6 +144,41 @@
     return Math.min(100, Math.round((progress.page / progress.total) * 100));
   }
 
+  /* ---------- Kitap meta verileri ---------- */
+  function bookPageCount(collection, book) {
+    if (book.pages && book.pages > 0) return book.pages;
+    // Fallback: kullanıcı kitabı açtıysa progress'tan total page çek
+    const p = getProgress(collection.id, book.id);
+    return (p && p.total) || 0;
+  }
+
+  function readingTimeMinutes(pages) {
+    if (!pages) return 0;
+    // Yaklaşık ~1.5 dk/sayfa (Türkçe çeviri ortalaması)
+    return Math.round(pages * 1.5);
+  }
+
+  function formatReadingTime(mins) {
+    if (!mins) return "";
+    if (mins < 60) return `~${mins} dk`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (m < 10) return `~${h} sa`;
+    if (m < 40) return `~${h}½ sa`;
+    return `~${h + 1} sa`;
+  }
+
+  function bookMetaText(collection, book) {
+    const parts = [];
+    if (book.year) parts.push(String(book.year));
+    const pages = bookPageCount(collection, book);
+    if (pages) parts.push(`${pages} sayfa`);
+    const mins = readingTimeMinutes(pages);
+    const time = formatReadingTime(mins);
+    if (time) parts.push(time);
+    return parts.join(" · ");
+  }
+
   /* ---------- Favoriler ---------- */
   const FAVORITES_KEY = "kutuphane-favorites";
   function favoriteId(cid, bid) { return `${cid}__${bid}`; }
@@ -381,6 +416,8 @@
     const favBtn = `<button class="fav-btn ${fav ? "is-fav" : ""}" data-cid="${escapeHtml(collection.id)}" data-bid="${escapeHtml(book.id)}" aria-label="${fav ? "Favorilerden çıkar" : "Favorilere ekle"}" title="${fav ? "Favorilerden çıkar" : "Favorilere ekle"}">
       <svg viewBox="0 0 24 24" fill="${fav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
     </button>`;
+    const meta = bookMetaText(collection, book);
+    const metaHtml = meta ? `<p class="book-meta">${escapeHtml(meta)}</p>` : "";
     return `
       <div class="book-card-wrap">
         <a class="book-card" href="#/oku/${encodeURIComponent(collection.id)}/${encodeURIComponent(book.id)}">
@@ -389,6 +426,7 @@
           <div class="book-info">
             <p class="name">${escapeHtml(book.title)}</p>
             <p class="sub">${escapeHtml(collection.title)}</p>
+            ${metaHtml}
           </div>
         </a>
         ${favBtn}
@@ -450,6 +488,21 @@
     const { collection, book } = found;
     const fileUrl = encodePath(`${collection.folder}/${book.file}`);
 
+    // Reader meta satırı: yıl · sayfa · okuma süresi · orijinal dil
+    const metaParts = [];
+    if (book.year) metaParts.push(String(book.year));
+    const totalPages = bookPageCount(collection, book);
+    if (totalPages) metaParts.push(`${totalPages} sayfa`);
+    const readMins = readingTimeMinutes(totalPages);
+    const readTime = formatReadingTime(readMins);
+    if (readTime) metaParts.push(`${readTime} okuma`);
+    if (book.originalLanguage && book.originalLanguage !== "Türkçe") {
+      metaParts.push(`${escapeHtml(book.originalLanguage)}'den çeviri`);
+    } else if (book.originalLanguage === "Türkçe") {
+      metaParts.push("Türkçe");
+    }
+    const metaLine = metaParts.length ? `<p class="reader-meta">${metaParts.join(" · ")}</p>` : "";
+
     app.innerHTML = `
       <nav class="breadcrumbs">
         <a href="#/">Ana Sayfa</a>
@@ -463,6 +516,7 @@
           <div class="reader-title">
             <h1>${escapeHtml(book.subtitle || book.title)}</h1>
             <p>${escapeHtml(collection.title)}${collection.author ? " · " + escapeHtml(collection.author) : ""}</p>
+            ${metaLine}
           </div>
           <div class="reader-actions">
             <a class="btn" href="#/koleksiyon/${encodeURIComponent(collection.id)}">
