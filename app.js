@@ -207,9 +207,7 @@
     const found = findBook(cid, bid);
     if (!found || !found.book) { app.innerHTML = viewNotFound(); return; }
     const { collection, book } = found;
-    const fileUrl = (typeof PDF_BASE_URL !== "undefined" && PDF_BASE_URL)
-      ? `${PDF_BASE_URL}/${encodeURIComponent(book.file)}`
-      : encodePath(`${collection.folder}/${book.file}`);
+    const fileUrl = encodePath(`${collection.folder}/${book.file}`);
 
     app.innerHTML = `
       <nav class="breadcrumbs">
