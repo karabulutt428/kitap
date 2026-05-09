@@ -4,16 +4,32 @@
   const searchInput = document.getElementById("search");
   const themeToggle = document.getElementById("theme-toggle");
 
-  /* ---------- Tema ---------- */
+  /* ---------- Tema ----------
+   * Öncelik: localStorage > sistem (prefers-color-scheme).
+   * Kullanıcı toggle'a basmadıysa sistem tercihi değiştiğinde anlık takip edilir.
+   */
+  const darkMql = window.matchMedia("(prefers-color-scheme: dark)");
+  const applyTheme = (mode) => {
+    if (mode === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+  };
   const savedTheme = localStorage.getItem("kutuphane-theme");
-  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+  applyTheme(savedTheme || (darkMql.matches ? "dark" : "light"));
+
+  // Kullanıcı manuel seçim yapmadıysa sistem değişimini izle
+  const onSystemThemeChange = (e) => {
+    if (localStorage.getItem("kutuphane-theme")) return;
+    applyTheme(e.matches ? "dark" : "light");
+  };
+  if (darkMql.addEventListener) darkMql.addEventListener("change", onSystemThemeChange);
+  else if (darkMql.addListener) darkMql.addListener(onSystemThemeChange); // Safari < 14
+
   let themeTransitionTimer = null;
   themeToggle.addEventListener("click", () => {
     const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
     const next = current === "dark" ? "light" : "dark";
     document.documentElement.classList.add("theme-transitioning");
-    if (next === "dark") document.documentElement.setAttribute("data-theme", "dark");
-    else document.documentElement.removeAttribute("data-theme");
+    applyTheme(next);
     try { localStorage.setItem("kutuphane-theme", next); } catch (_) {}
     clearTimeout(themeTransitionTimer);
     themeTransitionTimer = setTimeout(() => {
@@ -220,10 +236,20 @@
   }
 
   /* ---------- Etiketler / filtreler ---------- */
-  let activeTag = null; // null = "Tümü"
+  // null = "Tümü" (tüm kitaplar karma); COLLECTIONS_VIEW = koleksiyon kartları; aksi halde etiket adı.
+  const COLLECTIONS_VIEW = "__collections__";
+  let activeTag = null;
 
   function bookTags(collection, book) {
     return (book.tags && book.tags.length) ? book.tags : (collection.tags || []);
+  }
+
+  function getAllBooks() {
+    const out = [];
+    data.collections.forEach(c => {
+      (c.books || []).forEach(b => out.push({ collection: c, book: b }));
+    });
+    return out;
   }
 
   function getAllTags() {
@@ -245,28 +271,17 @@
     "çocuk": "Çocuk",
     "felsefe": "Felsefe",
     "kişisel-gelişim": "Kişisel Gelişim",
-    "tiyatro": "Tiyatro"
+    "tiyatro": "Tiyatro",
+    "psikoloji": "Psikoloji"
   };
   const tagLabel = (t) => TAG_LABELS[t] || (t.charAt(0).toUpperCase() + t.slice(1));
 
   /* ---------- Görünümler ---------- */
   function viewHome(query = "") {
     const q = query.trim().toLowerCase();
-    let collections = data.collections;
+    let collections = [];
     let bookHits = [];
-
-    // Etiket filtresi (arama yokken aktif)
-    if (!q && activeTag) {
-      collections = data.collections.filter(c => (c.tags || []).includes(activeTag));
-      // Kitap bazlı tag'le eşleşenler de gösterilebilir (koleksiyon dışı)
-      data.collections.forEach(c => {
-        c.books.forEach(b => {
-          if (b.tags && b.tags.includes(activeTag) && !(c.tags || []).includes(activeTag)) {
-            bookHits.push({ collection: c, book: b });
-          }
-        });
-      });
-    }
+    let allBooksFlat = [];
 
     if (q) {
       collections = data.collections.filter(c =>
@@ -276,6 +291,22 @@
       data.collections.forEach(c => {
         c.books.forEach(b => {
           if (b.title.toLowerCase().includes(q) || (b.subtitle || "").toLowerCase().includes(q)) {
+            bookHits.push({ collection: c, book: b });
+          }
+        });
+      });
+    } else if (activeTag === null) {
+      // Tümü: tüm kitaplar tek karma grid
+      allBooksFlat = getAllBooks();
+    } else if (activeTag === COLLECTIONS_VIEW) {
+      // Koleksiyonlar: koleksiyon kartları
+      collections = data.collections;
+    } else {
+      // Etiket filtresi
+      collections = data.collections.filter(c => (c.tags || []).includes(activeTag));
+      data.collections.forEach(c => {
+        c.books.forEach(b => {
+          if (b.tags && b.tags.includes(activeTag) && !(c.tags || []).includes(activeTag)) {
             bookHits.push({ collection: c, book: b });
           }
         });
@@ -290,7 +321,7 @@
         </div>`;
     }
 
-    if (!q && activeTag && collections.length === 0 && bookHits.length === 0) {
+    if (!q && activeTag && activeTag !== COLLECTIONS_VIEW && collections.length === 0 && bookHits.length === 0) {
       return renderTagBar() + `
         <div class="empty">
           <h3>Sonuç bulunamadı</h3>
@@ -331,6 +362,17 @@
         </div>
       </section>` : "";
 
+    const allBooksHtml = allBooksFlat.length ? `
+      <section>
+        <div class="section-head">
+          <h2>Tüm Kitaplar</h2>
+          <span class="muted">${allBooksFlat.length} kitap</span>
+        </div>
+        <div class="books-grid">
+          ${allBooksFlat.map(({collection, book}, i) => renderBookCard(collection, book, i)).join("")}
+        </div>
+      </section>` : "";
+
     const collectionsHtml = collections.length ? `
       <section>
         <div class="section-head">
@@ -353,7 +395,7 @@
         </div>
       </section>` : "";
 
-    return heading + tagBarHtml + continueHtml + favsHtml + collectionsHtml + bookHitsHtml;
+    return heading + tagBarHtml + continueHtml + favsHtml + allBooksHtml + collectionsHtml + bookHitsHtml;
   }
 
   function renderTagBar() {
@@ -361,6 +403,7 @@
     if (tags.length === 0) return "";
     const pills = [
       `<button class="tag-pill ${activeTag === null ? "is-active" : ""}" data-tag="">Tümü</button>`,
+      `<button class="tag-pill ${activeTag === COLLECTIONS_VIEW ? "is-active" : ""}" data-tag="${COLLECTIONS_VIEW}">Koleksiyonlar</button>`,
       ...tags.map(t => `<button class="tag-pill ${activeTag === t ? "is-active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(tagLabel(t))}</button>`)
     ].join("");
     return `<div class="tag-bar" role="tablist" aria-label="Etiket filtresi">${pills}</div>`;
@@ -569,10 +612,10 @@
         </div>
       </div>`;
 
-    initPdfReader(fileUrl, `kutuphane-page-${cid}-${bid}`);
+    initPdfReader(fileUrl, cid, bid);
   }
 
-  async function initPdfReader(url, storageKey) {
+  async function initPdfReader(url, cid, bid) {
     if (activeReader) { activeReader.dispose(); activeReader = null; }
 
     const canvas = document.getElementById("pdf-canvas");
@@ -585,17 +628,9 @@
     const ctx = canvas.getContext("2d");
 
     let pdf = null;
-    // storageKey formatı: "kutuphane-page-{cid}-{bid}". Yeni progress sisteminden de oku.
-    const skParts = storageKey.replace(/^kutuphane-page-/, "");
-    let progressCid = null, progressBid = null;
-    for (const c of data.collections) {
-      if (skParts.startsWith(c.id + "-")) {
-        const bidPart = skParts.slice(c.id.length + 1);
-        const book = c.books.find(b => b.id === bidPart);
-        if (book) { progressCid = c.id; progressBid = book.id; break; }
-      }
-    }
-    const initialProgress = (progressCid && progressBid) ? getProgress(progressCid, progressBid) : null;
+    // Geriye uyum için legacy anahtar formatı korunuyor.
+    const storageKey = `kutuphane-page-${cid}-${bid}`;
+    const initialProgress = getProgress(cid, bid);
     let currentPage = (initialProgress && initialProgress.page) || parseInt(localStorage.getItem(storageKey) || "1", 10) || 1;
     let scale = 1;
     let fitMode = "width";
@@ -655,9 +690,7 @@
       pageInput.value = currentPage;
       zoomLabel.textContent = "%" + Math.round(scale * 100);
       localStorage.setItem(storageKey, String(currentPage));
-      if (progressCid && progressBid) {
-        setProgress(progressCid, progressBid, currentPage, pdf.numPages);
-      }
+      setProgress(cid, bid, currentPage, pdf.numPages);
     }
 
     function go(delta) {
@@ -805,6 +838,8 @@
   searchInput.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
+      // Arama kullanıldığında etiket filtresini sıfırla; arama temizlenince "Tümü"ye dönülür.
+      if (searchInput.value.trim()) activeTag = null;
       // Arama kullanıldığında her zaman ana sayfaya geç
       if (location.hash !== "#/") {
         location.hash = "#/";

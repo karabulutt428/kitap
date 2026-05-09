@@ -1,5 +1,5 @@
 /* Kütüphane PWA Service Worker */
-const VERSION = "v1";
+const VERSION = "v4";
 const SHELL_CACHE = `kutuphane-shell-${VERSION}`;
 const ASSET_CACHE = `kutuphane-assets-${VERSION}`;
 
@@ -63,9 +63,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Shell files (css, js, manifest, html) — stale-while-revalidate
-  event.respondWith(staleWhileRevalidate(req, SHELL_CACHE));
+  // Shell files (css, js, manifest, html) — network-first.
+  // Geliştirmede eski cache'in takılı kalmaması için ağı önceleriz; offline'da cache devreye girer.
+  event.respondWith(networkFirst(req, SHELL_CACHE));
 });
+
+async function networkFirst(req, cacheName) {
+  const cache = await caches.open(cacheName);
+  try {
+    const res = await fetch(req);
+    if (res && res.status === 200) cache.put(req, res.clone());
+    return res;
+  } catch (err) {
+    // Önce birebir eşleşme; yoksa query string'i (cache-bust ?v=...) yok say.
+    const cached =
+      (await cache.match(req)) ||
+      (await cache.match(req, { ignoreSearch: true }));
+    return cached || Response.error();
+  }
+}
 
 async function cacheFirst(req, cacheName) {
   const cache = await caches.open(cacheName);
