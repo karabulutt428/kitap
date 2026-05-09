@@ -729,6 +729,11 @@
       app.innerHTML = viewNotFound();
     }
     if (!isReader) markCachedCovers();
+    // Sayfa geçişi animasyonunu yeniden tetikle
+    app.style.animation = "none";
+    // force reflow
+    void app.offsetHeight;
+    app.style.animation = "";
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   }
 
@@ -756,6 +761,22 @@
   });
 
   window.addEventListener("hashchange", render);
+
+  /* ---------- Header scroll gölgesi ---------- */
+  const siteHeader = document.querySelector(".site-header");
+  if (siteHeader) {
+    let scrollTicking = false;
+    const updateHeaderShadow = () => {
+      siteHeader.classList.toggle("scrolled", window.scrollY > 8);
+      scrollTicking = false;
+    };
+    window.addEventListener("scroll", () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(updateHeaderShadow);
+    }, { passive: true });
+    updateHeaderShadow();
+  }
 
   /* ---------- Sürpriz kitap ---------- */
   const surpriseBtn = document.getElementById("surprise-btn");

@@ -841,6 +841,108 @@ main { padding: 40px 28px 80px; }
   transition: width .4s ease;
 }
 
+/* ---------- Sayfa & grid geçiş animasyonları ---------- */
+
+/* Sayfa geçişinde içerik alanı yumuşak fade + hafif yukarı kayma */
+#app {
+  animation: app-enter 360ms cubic-bezier(.2, .7, .2, 1) both;
+}
+@keyframes app-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Grid içindeki kartlar sırayla (stagger) belirir */
+.collections-grid > .collection-card,
+.books-grid > .book-card-wrap,
+.books-grid > .book-card,
+.continue-grid > .continue-card {
+  animation: card-enter 420ms cubic-bezier(.2, .7, .2, 1) both;
+}
+.collections-grid > *:nth-child(1),
+.books-grid > *:nth-child(1),
+.continue-grid > *:nth-child(1) { animation-delay: 0ms; }
+.collections-grid > *:nth-child(2),
+.books-grid > *:nth-child(2),
+.continue-grid > *:nth-child(2) { animation-delay: 40ms; }
+.collections-grid > *:nth-child(3),
+.books-grid > *:nth-child(3),
+.continue-grid > *:nth-child(3) { animation-delay: 80ms; }
+.collections-grid > *:nth-child(4),
+.books-grid > *:nth-child(4),
+.continue-grid > *:nth-child(4) { animation-delay: 120ms; }
+.collections-grid > *:nth-child(5),
+.books-grid > *:nth-child(5),
+.continue-grid > *:nth-child(5) { animation-delay: 160ms; }
+.collections-grid > *:nth-child(6),
+.books-grid > *:nth-child(6),
+.continue-grid > *:nth-child(6) { animation-delay: 200ms; }
+.collections-grid > *:nth-child(7),
+.books-grid > *:nth-child(7),
+.continue-grid > *:nth-child(7) { animation-delay: 240ms; }
+.collections-grid > *:nth-child(8),
+.books-grid > *:nth-child(8),
+.continue-grid > *:nth-child(8) { animation-delay: 280ms; }
+.collections-grid > *:nth-child(n+9),
+.books-grid > *:nth-child(n+9),
+.continue-grid > *:nth-child(n+9) { animation-delay: 320ms; }
+
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Etiket pill'leri da yumuşak gelsin */
+.tag-bar .tag-pill {
+  animation: pill-enter 320ms cubic-bezier(.2, .7, .2, 1) both;
+}
+.tag-bar .tag-pill:nth-child(1) { animation-delay: 20ms; }
+.tag-bar .tag-pill:nth-child(2) { animation-delay: 50ms; }
+.tag-bar .tag-pill:nth-child(3) { animation-delay: 80ms; }
+.tag-bar .tag-pill:nth-child(4) { animation-delay: 110ms; }
+.tag-bar .tag-pill:nth-child(5) { animation-delay: 140ms; }
+.tag-bar .tag-pill:nth-child(6) { animation-delay: 170ms; }
+.tag-bar .tag-pill:nth-child(7) { animation-delay: 200ms; }
+.tag-bar .tag-pill:nth-child(n+8) { animation-delay: 220ms; }
+
+@keyframes pill-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* PDF canvas yumuşak fade */
+#pdf-canvas {
+  animation: canvas-fade 380ms ease both;
+}
+@keyframes canvas-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Header gölgesi: kullanıcı scroll edince hafif derinlik */
+.site-header {
+  transition: box-shadow .25s ease, background .25s ease;
+}
+.site-header.scrolled {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+[data-theme="dark"] .site-header.scrolled {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Buton/link genel hover yumuşatma */
+.btn, .pdf-btn, .theme-toggle, .fav-btn, .tag-pill {
+  transition: transform .18s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.btn:active, .pdf-btn:active, .theme-toggle:active, .tag-pill:active {
+  transform: scale(0.96);
+}
+
+/* Breadcrumbs yumuşak gelsin */
+.breadcrumbs {
+  animation: app-enter 320ms cubic-bezier(.2, .7, .2, 1) both;
+}
+
 /* ---------- Sürpriz butonu (zar) ---------- */
 .surprise-toggle svg {
   transition: transform .5s cubic-bezier(.4,1.4,.6,1);
