@@ -2,6 +2,10 @@
 // Yeni koleksiyon eklemek için: aşağıdaki "collections" dizisine yeni bir nesne ekleyin.
 // Yeni kitap eklemek için: ilgili koleksiyonun "books" dizisine yeni bir nesne ekleyin.
 
+// PDF dosyaları GitHub Releases üzerinden host edilir.
+// Yeni release oluşturursanız aşağıdaki tag'i güncelleyin.
+const PDF_BASE_URL = "https://github.com/karabulutt428/kitap/releases/download/dropdown";
+
 const LIBRARY_DATA = {
   collections: [
     {
@@ -233,14 +237,14 @@ const LIBRARY_DATA = {
           id: "fahrenheit-451",
           title: "Fahrenheit 451",
           subtitle: "Fahrenheit 451 - Ray Bradbury",
-          file: "Fahrenheit 451.pdf",
+          file: "Fahrenheit.451.pdf",
           cover: "fahrenheit451.webp"
         },
         {
           id: "bir-idam-mahkumunun-son-gunu",
           title: "Bir İdam Mahkumunun Son Günü",
           subtitle: "Bir İdam Mahkumunun Son Günü - Victor Hugo",
-          file: "bir-idam-mahkumunun-son-günü.pdf",
+          file: "bir-idam-mahkumunun-son-gunu.pdf",
           cover: "idam makumu son günü.jpg"
         },
         {
@@ -261,7 +265,7 @@ const LIBRARY_DATA = {
           id: "masumiyet-muzesi",
           title: "Masumiyet Müzesi",
           subtitle: "Masumiyet Müzesi - Orhan Pamuk",
-          file: "masumiyet-müzesi.pdf",
+          file: "masumiyet-muzesi.pdf",
           cover: "masumiyet müzesi.jpg"
         },
         {
