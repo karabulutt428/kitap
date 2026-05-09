@@ -96,6 +96,10 @@
     } catch (_) {}
   }
 
+  // "Okumaya devam et" listesinde görünmesi için minimum sayfa eşiği.
+  // Rastgele kitap açıp hemen kapatınca listeyi kirletmesin diye.
+  const CONTINUE_MIN_PAGE = 5;
+
   function getRecentReads(limit = 8) {
     const items = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -111,6 +115,7 @@
       let progress;
       try { progress = JSON.parse(localStorage.getItem(key)); } catch (_) { continue; }
       if (!progress || !progress.page) continue;
+      if (progress.page <= CONTINUE_MIN_PAGE) continue;
       items.push({ collection: found.collection, book: found.book, progress });
     }
     // Eski (legacy) anahtarları da topla — sadece yeni anahtarda olmayanları
@@ -132,7 +137,7 @@
       // Aynı kitap zaten yeni format'tan eklenmişse atla
       if (items.some(x => x.collection.id === matched.collection.id && x.book.id === matched.book.id)) continue;
       const page = parseInt(localStorage.getItem(key), 10);
-      if (!page || page < 1) continue;
+      if (!page || page <= CONTINUE_MIN_PAGE) continue;
       items.push({ collection: matched.collection, book: matched.book, progress: { page, total: 0, time: 0 } });
     }
     items.sort((a, b) => (b.progress.time || 0) - (a.progress.time || 0));
@@ -407,7 +412,7 @@
         </div>`;
     const progress = getProgress(collection.id, book.id);
     const pct = progressPercent(progress);
-    const progressBar = (progress && progress.page > 1)
+    const progressBar = (progress && progress.page > CONTINUE_MIN_PAGE)
       ? `<div class="book-progress" title="${pct ? `%${pct} okundu` : `Sayfa ${progress.page}`}">
            <div class="book-progress-fill" style="width:${pct || 8}%"></div>
          </div>`
