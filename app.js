@@ -144,6 +144,41 @@
     return Math.min(100, Math.round((progress.page / progress.total) * 100));
   }
 
+  /* ---------- Favoriler ---------- */
+  const FAVORITES_KEY = "kutuphane-favorites";
+  function favoriteId(cid, bid) { return `${cid}__${bid}`; }
+  function getFavorites() {
+    try {
+      const raw = localStorage.getItem(FAVORITES_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (_) { return []; }
+  }
+  function isFavorite(cid, bid) {
+    return getFavorites().includes(favoriteId(cid, bid));
+  }
+  function toggleFavorite(cid, bid) {
+    const id = favoriteId(cid, bid);
+    const list = getFavorites();
+    const idx = list.indexOf(id);
+    if (idx >= 0) list.splice(idx, 1); else list.push(id);
+    try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(list)); } catch (_) {}
+    return idx < 0; // yeni eklendi mi?
+  }
+  function getFavoriteBooks() {
+    const ids = getFavorites();
+    const out = [];
+    for (const id of ids) {
+      const sep = id.indexOf("__");
+      if (sep < 0) continue;
+      const cid = id.slice(0, sep), bid = id.slice(sep + 2);
+      const found = findBook(cid, bid);
+      if (found && found.book) out.push(found);
+    }
+    return out;
+  }
+
   /* ---------- Görünümler ---------- */
   function viewHome(query = "") {
     const q = query.trim().toLowerCase();
@@ -191,6 +226,18 @@
         </div>
       </section>` : "";
 
+    const favs = q ? [] : getFavoriteBooks();
+    const favsHtml = favs.length ? `
+      <section style="margin-bottom: 48px;">
+        <div class="section-head">
+          <h2>Favorilerim</h2>
+          <span class="muted">${favs.length} kitap</span>
+        </div>
+        <div class="books-grid">
+          ${favs.map(({collection, book}, i) => renderBookCard(collection, book, i)).join("")}
+        </div>
+      </section>` : "";
+
     const collectionsHtml = collections.length ? `
       <section>
         <div class="section-head">
@@ -213,7 +260,7 @@
         </div>
       </section>` : "";
 
-    return heading + continueHtml + collectionsHtml + bookHitsHtml;
+    return heading + continueHtml + favsHtml + collectionsHtml + bookHitsHtml;
   }
 
   function bookCoverUrl(collection, book) {
@@ -267,15 +314,22 @@
            <div class="book-progress-fill" style="width:${pct || 8}%"></div>
          </div>`
       : "";
+    const fav = isFavorite(collection.id, book.id);
+    const favBtn = `<button class="fav-btn ${fav ? "is-fav" : ""}" data-cid="${escapeHtml(collection.id)}" data-bid="${escapeHtml(book.id)}" aria-label="${fav ? "Favorilerden çıkar" : "Favorilere ekle"}" title="${fav ? "Favorilerden çıkar" : "Favorilere ekle"}">
+      <svg viewBox="0 0 24 24" fill="${fav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </button>`;
     return `
-      <a class="book-card" href="#/oku/${encodeURIComponent(collection.id)}/${encodeURIComponent(book.id)}">
-        ${cover}
-        ${progressBar}
-        <div class="book-info">
-          <p class="name">${escapeHtml(book.title)}</p>
-          <p class="sub">${escapeHtml(collection.title)}</p>
-        </div>
-      </a>`;
+      <div class="book-card-wrap">
+        <a class="book-card" href="#/oku/${encodeURIComponent(collection.id)}/${encodeURIComponent(book.id)}">
+          ${cover}
+          ${progressBar}
+          <div class="book-info">
+            <p class="name">${escapeHtml(book.title)}</p>
+            <p class="sub">${escapeHtml(collection.title)}</p>
+          </div>
+        </a>
+        ${favBtn}
+      </div>`;
   }
 
   function renderContinueCard({ collection, book, progress }) {
@@ -619,5 +673,28 @@
   });
 
   window.addEventListener("hashchange", render);
+
+  // Favori butonu tıklama (delegated)
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".fav-btn");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const cid = btn.dataset.cid;
+    const bid = btn.dataset.bid;
+    if (!cid || !bid) return;
+    const nowFav = toggleFavorite(cid, bid);
+    btn.classList.toggle("is-fav", nowFav);
+    btn.setAttribute("aria-label", nowFav ? "Favorilerden çıkar" : "Favorilere ekle");
+    btn.setAttribute("title", nowFav ? "Favorilerden çıkar" : "Favorilere ekle");
+    const svg = btn.querySelector("svg");
+    if (svg) svg.setAttribute("fill", nowFav ? "currentColor" : "none");
+    // Eğer ana sayfadaysak ve favori değişti, "Favorilerim" bölümünü güncellemek için yeniden render
+    if (location.hash === "#/" || location.hash === "" || location.hash === "#") {
+      // Animasyon bittikten sonra güncelle
+      setTimeout(() => render(), 300);
+    }
+  });
+
   render();
 })();
