@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>OG Görseli Üretici</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #1a140f;
+    color: #ece4d6;
+    margin: 0;
+    padding: 32px;
+    text-align: center;
+  }
+  h1 { font-weight: 600; margin-bottom: 8px; }
+  p { color: #a89c8a; margin: 4px 0 24px; }
+  .preview {
+    background: #221c15;
+    border: 1px solid #2e2620;
+    border-radius: 14px;
+    padding: 18px;
+    max-width: 1280px;
+    margin: 24px auto;
+  }
+  canvas {
+    background: #0a0a0a;
+    border-radius: 8px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto 12px;
+  }
+  button {
+    background: #d4a574;
+    color: #1a140f;
+    border: 0;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 4px;
+  }
+  button:active { transform: scale(0.97); }
+  .meta { color: #a89c8a; font-size: 13px; margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<h1>📸 Sosyal Medya Önizleme Görseli</h1>
+<p>WhatsApp, Twitter, Facebook'ta link paylaşıldığında çıkan kart görseli (1200 × 630).</p>
+
+<div class="preview">
+  <canvas id="canvas" width="600" height="315"></canvas>
+  <div class="meta">Önizleme: 600 × 315 — gerçek dosya 1200 × 630 olarak kaydedilir</div>
+  <button id="download">📥 og-image.png olarak indir</button>
+</div>
+
+<script>
+const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3a2515"/>
+      <stop offset="50%" stop-color="#7a5230"/>
+      <stop offset="100%" stop-color="#c79968"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbf6ec"/>
+      <stop offset="100%" stop-color="#e3d3b8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12"/>
+      <feOffset dx="0" dy="8"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Arka plan -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <ellipse cx="900" cy="315" rx="500" ry="350" fill="url(#glow)"/>
+
+  <!-- Sol: başlık ve metin -->
+  <g font-family="Georgia, 'Times New Roman', serif">
+    <text x="80" y="220" font-size="92" font-weight="600" fill="#fbf6ec" letter-spacing="-1">Kütüphane</text>
+    <text x="80" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="400" fill="#ece4d6" opacity="0.85">Kişisel kitaplığın, her zaman yanında</text>
+  </g>
+
+  <!-- Sol alt: özellik chip'leri -->
+  <g font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#fbf6ec">
+    <g transform="translate(80, 380)">
+      <rect width="180" height="44" rx="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+      <text x="90" y="29" text-anchor="middle">📚 33 kitap</text>
+    </g>
+    <g transform="translate(280, 380)">
+      <rect width="200" height="44" rx="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+      <text x="100" y="29" text-anchor="middle">🌙 Gece modu</text>
+    </g>
+    <g transform="translate(500, 380)">
+      <rect width="200" height="44" rx="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+      <text x="100" y="29" text-anchor="middle">📱 Çevrimdışı</text>
+    </g>
+  </g>
+
+  <!-- Sağ: 3 kitap yelpazesi -->
+  <g filter="url(#shadow)">
+    <!-- Arka kitap -->
+    <g transform="translate(870, 100) rotate(-12)">
+      <rect width="180" height="280" rx="6" fill="#5b3a8a"/>
+      <rect width="180" height="280" rx="6" fill="url(#glow)"/>
+      <text x="90" y="140" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#fbf6ec" text-anchor="middle">1984</text>
+      <text x="90" y="170" font-family="system-ui, sans-serif" font-size="13" fill="#fbf6ec" opacity="0.8" text-anchor="middle">Orwell</text>
+    </g>
+    <!-- Orta kitap -->
+    <g transform="translate(960, 80)">
+      <rect width="180" height="280" rx="6" fill="#3a5a40"/>
+      <rect width="180" height="280" rx="6" fill="url(#glow)"/>
+      <text x="90" y="140" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#fbf6ec" text-anchor="middle">Yüzüklerin</text>
+      <text x="90" y="166" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#fbf6ec" text-anchor="middle">Efendisi</text>
+      <text x="90" y="200" font-family="system-ui, sans-serif" font-size="13" fill="#fbf6ec" opacity="0.8" text-anchor="middle">Tolkien</text>
+    </g>
+    <!-- Ön kitap -->
+    <g transform="translate(1050, 110) rotate(10)">
+      <rect width="180" height="280" rx="6" fill="#7a5230"/>
+      <rect width="180" height="280" rx="6" fill="url(#glow)"/>
+      <text x="90" y="140" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#fbf6ec" text-anchor="middle">Harry</text>
+      <text x="90" y="166" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#fbf6ec" text-anchor="middle">Potter</text>
+      <text x="90" y="200" font-family="system-ui, sans-serif" font-size="13" fill="#fbf6ec" opacity="0.8" text-anchor="middle">Rowling</text>
+    </g>
+  </g>
+
+  <!-- Sol alt: site URL -->
+  <text x="80" y="570" font-family="system-ui, sans-serif" font-size="18" fill="#fbf6ec" opacity="0.6">karabulutt428.github.io/kitap</text>
+</svg>`;
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+// Yüksek çözünürlüklü canvas (gerçek boyut)
+const fullCanvas = document.createElement("canvas");
+fullCanvas.width = 1200;
+fullCanvas.height = 630;
+const fullCtx = fullCanvas.getContext("2d");
+
+const encoded = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(SVG);
+const img = new Image();
+img.onload = () => {
+  // Önizleme (yarı boyut)
+  ctx.drawImage(img, 0, 0, 600, 315);
+  // Tam boyut
+  fullCtx.imageSmoothingEnabled = true;
+  fullCtx.imageSmoothingQuality = "high";
+  fullCtx.drawImage(img, 0, 0, 1200, 630);
+};
+img.src = encoded;
+
+document.getElementById("download").addEventListener("click", () => {
+  fullCanvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "og-image.png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, "image/png");
+});
+</script>
+</body>
+</html>
