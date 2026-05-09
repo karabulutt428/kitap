@@ -53,7 +53,8 @@
 <div class="preview">
   <canvas id="canvas" width="600" height="315"></canvas>
   <div class="meta">Önizleme: 600 × 315 — gerçek dosya 1200 × 630 olarak kaydedilir</div>
-  <button id="download">📥 og-image.png olarak indir</button>
+  <button id="download">📥 og-image.jpg olarak indir (sıkıştırılmış)</button>
+  <button id="download-png">PNG olarak indir</button>
 </div>
 
 <script>
@@ -158,17 +159,25 @@ img.onload = () => {
 };
 img.src = encoded;
 
-document.getElementById("download").addEventListener("click", () => {
+function downloadAs(filename, mime, quality) {
   fullCanvas.toBlob((blob) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "og-image.png";
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, "image/png");
+  }, mime, quality);
+}
+
+document.getElementById("download").addEventListener("click", () => {
+  // JPEG, %88 kalite — sosyal medya için ideal (~150-250 KB)
+  downloadAs("og-image.jpg", "image/jpeg", 0.88);
+});
+document.getElementById("download-png").addEventListener("click", () => {
+  downloadAs("og-image.png", "image/png");
 });
 </script>
 </body>
