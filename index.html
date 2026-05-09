@@ -67,10 +67,28 @@
         <input id="search" type="search" placeholder="Kitap veya koleksiyon ara…" autocomplete="off" />
       </div>
 
+      <button id="surprise-btn" class="theme-toggle surprise-toggle" aria-label="Rastgele kitap aç" title="Sürpriz kitap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/></svg>
+      </button>
+
       <button id="theme-toggle" class="theme-toggle" aria-label="Temayı değiştir" title="Tema">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
+    </div>
+
+    <!-- PWA install banner (gerekiyorsa JS ile gösterilir) -->
+    <div id="install-banner" class="install-banner" hidden>
+      <div class="container install-inner">
+        <div class="install-text">
+          <strong>Kütüphaneyi ana ekrana ekle</strong>
+          <span>Tek dokunuşla aç, tam ekran oku, çevrimdışı bile kullan.</span>
+        </div>
+        <div class="install-actions">
+          <button id="install-dismiss" class="btn">Şimdi değil</button>
+          <button id="install-accept" class="btn primary">Ekle</button>
+        </div>
+      </div>
     </div>
   </header>
 

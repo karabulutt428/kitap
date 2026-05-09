@@ -841,6 +841,77 @@ main { padding: 40px 28px 80px; }
   transition: width .4s ease;
 }
 
+/* ---------- Sürpriz butonu (zar) ---------- */
+.surprise-toggle svg {
+  transition: transform .5s cubic-bezier(.4,1.4,.6,1);
+}
+.surprise-toggle:hover svg {
+  transform: rotate(15deg);
+}
+.surprise-toggle.rolling svg {
+  animation: dice-roll 0.5s ease;
+}
+@keyframes dice-roll {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(360deg) scale(1.15); }
+  100% { transform: rotate(720deg) scale(1); }
+}
+
+/* ---------- PWA install banner ---------- */
+.install-banner {
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-elev));
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height .35s ease, opacity .25s ease;
+}
+.install-banner:not([hidden]) {
+  max-height: 0;
+}
+.install-banner.is-visible {
+  max-height: 200px;
+  opacity: 1;
+}
+.install-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 28px;
+  flex-wrap: wrap;
+}
+.install-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 200px;
+}
+.install-text strong {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--text);
+}
+.install-text span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.install-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.install-actions .btn {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  .install-inner { padding: 12px 18px; }
+  .install-text strong { font-size: 15px; }
+  .install-text span { font-size: 12px; }
+}
+
 /* ---------- PDF gece modu ---------- */
 #pdf-canvas.pdf-night {
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95);

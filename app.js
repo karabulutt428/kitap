@@ -757,6 +757,72 @@
 
   window.addEventListener("hashchange", render);
 
+  /* ---------- Sürpriz kitap ---------- */
+  const surpriseBtn = document.getElementById("surprise-btn");
+  if (surpriseBtn) {
+    surpriseBtn.addEventListener("click", () => {
+      const allBooks = [];
+      data.collections.forEach(c => c.books.forEach(b => allBooks.push({ cid: c.id, bid: b.id })));
+      if (allBooks.length === 0) return;
+      const pick = allBooks[Math.floor(Math.random() * allBooks.length)];
+      // Görsel feedback - zar dönsün
+      surpriseBtn.classList.add("rolling");
+      setTimeout(() => surpriseBtn.classList.remove("rolling"), 500);
+      location.hash = `#/oku/${encodeURIComponent(pick.cid)}/${encodeURIComponent(pick.bid)}`;
+    });
+  }
+
+  /* ---------- PWA install banner ---------- */
+  const INSTALL_DISMISS_KEY = "kutuphane-install-dismissed";
+  const installBanner = document.getElementById("install-banner");
+  const installAccept = document.getElementById("install-accept");
+  const installDismiss = document.getElementById("install-dismiss");
+  let deferredInstallPrompt = null;
+
+  function showInstallBanner() {
+    if (!installBanner) return;
+    if (localStorage.getItem(INSTALL_DISMISS_KEY) === "1") return;
+    installBanner.hidden = false;
+    requestAnimationFrame(() => installBanner.classList.add("is-visible"));
+  }
+  function hideInstallBanner(remember) {
+    if (!installBanner) return;
+    installBanner.classList.remove("is-visible");
+    setTimeout(() => { installBanner.hidden = true; }, 300);
+    if (remember) {
+      try { localStorage.setItem(INSTALL_DISMISS_KEY, "1"); } catch (_) {}
+    }
+  }
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    showInstallBanner();
+  });
+
+  if (installAccept) {
+    installAccept.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) { hideInstallBanner(true); return; }
+      hideInstallBanner(false);
+      try {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice.outcome === "accepted") {
+          try { localStorage.setItem(INSTALL_DISMISS_KEY, "1"); } catch (_) {}
+        }
+      } catch (_) {}
+      deferredInstallPrompt = null;
+    });
+  }
+  if (installDismiss) {
+    installDismiss.addEventListener("click", () => hideInstallBanner(true));
+  }
+
+  window.addEventListener("appinstalled", () => {
+    try { localStorage.setItem(INSTALL_DISMISS_KEY, "1"); } catch (_) {}
+    hideInstallBanner(false);
+  });
+
   // Etiket pill tıklama (delegated)
   document.addEventListener("click", (e) => {
     const pill = e.target.closest && e.target.closest(".tag-pill");
