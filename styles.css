@@ -1071,6 +1071,30 @@ main { padding: 40px 28px 80px; }
   margin-bottom: 32px;
   padding-bottom: 4px;
 }
+
+/* Mobilde tek satır + yatay kaydırma + container'ın kenarlarına kadar uzansın */
+@media (max-width: 720px) {
+  .tag-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    /* Container padding'inden taşır → sayfa kenarına kadar uzanır */
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 4px 16px;
+    /* Kaydırma çubuğunu gizle */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tag-bar::-webkit-scrollbar { display: none; }
+  .tag-bar .tag-pill {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+}
 .tag-pill {
   padding: 7px 14px;
   border-radius: 999px;
