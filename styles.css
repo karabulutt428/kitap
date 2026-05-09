@@ -53,6 +53,12 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Lacivert tap efektini kapat */
+  -webkit-tap-highlight-color: transparent;
+}
+button, a, input, [role="button"], .tag-pill, .fav-btn, .pdf-btn, .theme-toggle {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -965,14 +971,23 @@ main { padding: 40px 28px 80px; }
 }
 
 /* ---------- Sürpriz butonu (zar) ---------- */
+.surprise-toggle {
+  touch-action: manipulation;
+}
 .surprise-toggle svg {
   transition: transform .5s cubic-bezier(.4,1.4,.6,1);
 }
-.surprise-toggle:hover svg {
-  transform: rotate(15deg);
+@media (hover: hover) {
+  .surprise-toggle:hover svg {
+    transform: rotate(15deg);
+  }
 }
 .surprise-toggle.rolling svg {
   animation: dice-roll 0.5s ease;
+}
+/* Tüm tıklanabilir kontrollere touch-action ekle (300ms tap delay'i kapatır) */
+.theme-toggle, .pdf-btn, .btn, .tag-pill, .fav-btn, .book-card, .collection-card, .continue-card {
+  touch-action: manipulation;
 }
 @keyframes dice-roll {
   0%   { transform: rotate(0deg) scale(1); }
@@ -1136,6 +1151,46 @@ main { padding: 40px 28px 80px; }
 [data-theme="light"] .fav-btn.is-fav,
 :root:not([data-theme]) .fav-btn.is-fav {
   background: rgba(122, 82, 48, 0.95);
+}
+
+/* ---------- Mobil performans optimizasyonları ---------- */
+@media (max-width: 720px) {
+  /* backdrop-filter mobilde çok pahalı - kaldır */
+  .site-header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg);
+  }
+  /* Stagger animasyonlarını kapat - her render'da gridi yeniden oynamak hantal */
+  .collections-grid > .collection-card,
+  .books-grid > .book-card-wrap,
+  .books-grid > .book-card,
+  .continue-grid > .continue-card,
+  .tag-bar .tag-pill {
+    animation: none !important;
+  }
+  /* App enter animasyonunu hafiflet */
+  #app {
+    animation-duration: 200ms;
+  }
+  /* Box-shadow'ları sadeleştir */
+  .collection-card,
+  .book-card,
+  .continue-card {
+    transition: none;
+  }
+  /* Touch press feedback'i yumuşat */
+  .tag-pill:active,
+  .fav-btn:active,
+  .pdf-btn:active,
+  .btn:active,
+  .theme-toggle:active,
+  .book-card:active,
+  .collection-card:active,
+  .continue-card:active {
+    transform: scale(0.97);
+    transition: transform .12s ease;
+  }
 }
 
 /* Hareket azaltma tercihi */

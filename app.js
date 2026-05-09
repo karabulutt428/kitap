@@ -783,11 +783,6 @@
       app.innerHTML = viewNotFound();
     }
     if (!isReader) markCachedCovers();
-    // Sayfa geçişi animasyonunu yeniden tetikle
-    app.style.animation = "none";
-    // force reflow
-    void app.offsetHeight;
-    app.style.animation = "";
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   }
 
@@ -835,7 +830,8 @@
   /* ---------- Sürpriz kitap ---------- */
   const surpriseBtn = document.getElementById("surprise-btn");
   if (surpriseBtn) {
-    surpriseBtn.addEventListener("click", () => {
+    const pickRandom = (e) => {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       const allBooks = [];
       data.collections.forEach(c => c.books.forEach(b => allBooks.push({ cid: c.id, bid: b.id })));
       if (allBooks.length === 0) return;
@@ -843,8 +839,16 @@
       // Görsel feedback - zar dönsün
       surpriseBtn.classList.add("rolling");
       setTimeout(() => surpriseBtn.classList.remove("rolling"), 500);
-      location.hash = `#/oku/${encodeURIComponent(pick.cid)}/${encodeURIComponent(pick.bid)}`;
-    });
+      const newHash = `#/oku/${encodeURIComponent(pick.cid)}/${encodeURIComponent(pick.bid)}`;
+      if (location.hash === newHash) {
+        // Aynı kitaba denk geldi → manuel re-render + scroll top
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        location.hash = newHash;
+      }
+    };
+    surpriseBtn.addEventListener("click", pickRandom);
   }
 
   /* ---------- PWA install banner ---------- */
