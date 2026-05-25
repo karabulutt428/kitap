@@ -44,19 +44,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=4" />
-
-  <!-- Tema bootstrap: paint öncesi data-theme'i uygular, FOUC'u önler. -->
-  <script>
-    (function () {
-      try {
-        var saved = localStorage.getItem("kutuphane-theme");
-        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        var mode = saved || (prefersDark ? "dark" : "light");
-        if (mode === "dark") document.documentElement.setAttribute("data-theme", "dark");
-      } catch (_) {}
-    })();
-  </script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
@@ -134,8 +122,8 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="data.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       window.addEventListener("load", () => {

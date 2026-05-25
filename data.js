@@ -197,48 +197,6 @@ const LIBRARY_DATA = {
       ]
     },
     {
-      id: "psikoloji",
-      title: "Psikoloji",
-      author: "Robert Greene",
-      description: "Stratejik düşünme, etki ve insan doğası üzerine modern klasikler.",
-      accent: "#8a5a2b",
-      tags: ["psikoloji", "kişisel-gelişim"],
-      folder: "kitaplar/pisikoloji",
-      coverFolder: "kitaplar/pisikoloji/kapak resmi",
-      books: [
-        {
-          id: "iktidar-48-yasasi",
-          title: "İktidarın 48 Yasası",
-          subtitle: "İktidarın 48 Yasası - Robert Greene",
-          year: 1998,
-          pages: 470,
-          originalLanguage: "İngilizce",
-          file: "26413-robert-greene-iktidar-.pdf",
-          cover: "iktidar.jpg"
-        },
-        {
-          id: "ustalik",
-          title: "Ustalık",
-          subtitle: "Ustalık - Robert Greene",
-          year: 2012,
-          pages: 340,
-          originalLanguage: "İngilizce",
-          file: "Mir.az-usta_Mir.az_.pdf",
-          cover: "ustalık.jpg"
-        },
-        {
-          id: "bastan-cikarma-sanati",
-          title: "Baştan Çıkarma Sanatı",
-          subtitle: "Baştan Çıkarma Sanatı - Robert Greene",
-          year: 2001,
-          pages: 470,
-          originalLanguage: "İngilizce",
-          file: "bastan-cikarma-sanati.pdf",
-          cover: "bastan-cıkarma-sanatı.jpg"
-        }
-      ]
-    },
-    {
       id: "tekli-kitaplar",
       title: "Tekli Kitaplar",
       author: "Çeşitli Yazarlar",
@@ -366,7 +324,7 @@ const LIBRARY_DATA = {
           pages: 220,
           originalLanguage: "İngilizce",
           tags: ["klasik", "roman", "distopya"],
-          file: "Fahrenheit 451.pdf",
+          file: "fahrenheit-451.pdf",
           cover: "fahrenheit451.webp"
         },
         {
@@ -377,8 +335,8 @@ const LIBRARY_DATA = {
           pages: 130,
           originalLanguage: "Fransızca",
           tags: ["klasik", "roman"],
-          file: "bir-idam-mahkumunun-son-günü.pdf",
-          cover: "idam makumu son günü.jpg"
+          file: "bir-idam-mahkumunun-son-gunu.pdf",
+          cover: "bir-idam-mahkumunun-son-gunu.jpg"
         },
         {
           id: "fareler-ve-insanlar",
@@ -389,7 +347,7 @@ const LIBRARY_DATA = {
           originalLanguage: "İngilizce",
           tags: ["klasik", "roman"],
           file: "fareler-ve-insanlar.pdf",
-          cover: "fareler ve insanlar.webp"
+          cover: "fareler-ve-insanlar.webp"
         },
         {
           id: "hamlet",
@@ -410,8 +368,8 @@ const LIBRARY_DATA = {
           pages: 600,
           originalLanguage: "Türkçe",
           tags: ["roman"],
-          file: "masumiyet-müzesi.pdf",
-          cover: "masumiyet müzesi.jpg"
+          file: "masumiyet-muzesi.pdf",
+          cover: "masumiyet-muzesi.jpg"
         },
         {
           id: "psikiyatrist",
@@ -433,7 +391,7 @@ const LIBRARY_DATA = {
           originalLanguage: "Çince",
           tags: ["roman"],
           file: "yasamak.pdf",
-          cover: "yaşamak.webp"
+          cover: "yasamak.webp"
         },
         {
           id: "dokunmadan",
@@ -442,28 +400,48 @@ const LIBRARY_DATA = {
           tags: ["roman"],
           file: "dokunmadan.pdf",
           cover: "dokunmadan.jpg"
+        }
+      ]
+    },
+    {
+      id: "robert-greene",
+      title: "Robert Greene",
+      author: "Robert Greene",
+      description: "İnsan psikolojisi, iktidar ve ustalık üzerine Robert Greene'in çığır açan eserleri.",
+      accent: "#3a1f5a",
+      tags: ["kişisel-gelişim", "psikoloji"],
+      folder: "kitaplar/pisikoloji",
+      coverFolder: "kitaplar/pisikoloji/kapaklar",
+      books: [
+        {
+          id: "iktidar",
+          title: "İktidar",
+          subtitle: "İktidarın 48 Yasası - Robert Greene",
+          year: 1998,
+          pages: 480,
+          originalLanguage: "İngilizce",
+          file: "iktidar.pdf",
+          cover: "iktidar.jpg"
         },
         {
-          id: "devlet",
-          title: "Devlet",
-          subtitle: "Devlet - Platon",
-          year: "MÖ 380",
+          id: "bastan-cikarma-sanati",
+          title: "Baştan Çıkarma Sanatı",
+          subtitle: "Baştan Çıkarma Sanatı - Robert Greene",
+          year: 2001,
+          pages: 500,
+          originalLanguage: "İngilizce",
+          file: "bastan-cikarma-sanati.pdf",
+          cover: "bastan-cikarma-sanati.jpg"
+        },
+        {
+          id: "ustalik",
+          title: "Ustalık",
+          subtitle: "Ustalık - Robert Greene",
+          year: 2012,
           pages: 380,
-          originalLanguage: "Antik Yunanca",
-          tags: ["klasik", "felsefe"],
-          file: "Platon-Devlet.pdf",
-          cover: "devlet.jpg"
-        },
-        {
-          id: "nutuk",
-          title: "Nutuk",
-          subtitle: "Nutuk - Mustafa Kemal Atatürk",
-          year: 1927,
-          pages: 600,
-          originalLanguage: "Türkçe",
-          tags: ["klasik"],
-          file: "nutuk.pdf",
-          cover: "nutuk.jpg"
+          originalLanguage: "İngilizce",
+          file: "ustalik.pdf",
+          cover: "ustalik.jpg"
         }
       ]
     }

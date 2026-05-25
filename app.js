@@ -4,32 +4,16 @@
   const searchInput = document.getElementById("search");
   const themeToggle = document.getElementById("theme-toggle");
 
-  /* ---------- Tema ----------
-   * Öncelik: localStorage > sistem (prefers-color-scheme).
-   * Kullanıcı toggle'a basmadıysa sistem tercihi değiştiğinde anlık takip edilir.
-   */
-  const darkMql = window.matchMedia("(prefers-color-scheme: dark)");
-  const applyTheme = (mode) => {
-    if (mode === "dark") document.documentElement.setAttribute("data-theme", "dark");
-    else document.documentElement.removeAttribute("data-theme");
-  };
+  /* ---------- Tema ---------- */
   const savedTheme = localStorage.getItem("kutuphane-theme");
-  applyTheme(savedTheme || (darkMql.matches ? "dark" : "light"));
-
-  // Kullanıcı manuel seçim yapmadıysa sistem değişimini izle
-  const onSystemThemeChange = (e) => {
-    if (localStorage.getItem("kutuphane-theme")) return;
-    applyTheme(e.matches ? "dark" : "light");
-  };
-  if (darkMql.addEventListener) darkMql.addEventListener("change", onSystemThemeChange);
-  else if (darkMql.addListener) darkMql.addListener(onSystemThemeChange); // Safari < 14
-
+  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
   let themeTransitionTimer = null;
   themeToggle.addEventListener("click", () => {
     const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
     const next = current === "dark" ? "light" : "dark";
     document.documentElement.classList.add("theme-transitioning");
-    applyTheme(next);
+    if (next === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
     try { localStorage.setItem("kutuphane-theme", next); } catch (_) {}
     clearTimeout(themeTransitionTimer);
     themeTransitionTimer = setTimeout(() => {
@@ -236,20 +220,10 @@
   }
 
   /* ---------- Etiketler / filtreler ---------- */
-  // null = "Tümü" (tüm kitaplar karma); COLLECTIONS_VIEW = koleksiyon kartları; aksi halde etiket adı.
-  const COLLECTIONS_VIEW = "__collections__";
-  let activeTag = null;
+  let activeTag = null; // null = "Tümü"
 
   function bookTags(collection, book) {
     return (book.tags && book.tags.length) ? book.tags : (collection.tags || []);
-  }
-
-  function getAllBooks() {
-    const out = [];
-    data.collections.forEach(c => {
-      (c.books || []).forEach(b => out.push({ collection: c, book: b }));
-    });
-    return out;
   }
 
   function getAllTags() {
@@ -279,9 +253,21 @@
   /* ---------- Görünümler ---------- */
   function viewHome(query = "") {
     const q = query.trim().toLowerCase();
-    let collections = [];
+    let collections = data.collections;
     let bookHits = [];
-    let allBooksFlat = [];
+
+    // Etiket filtresi (arama yokken aktif)
+    if (!q && activeTag) {
+      collections = data.collections.filter(c => (c.tags || []).includes(activeTag));
+      // Kitap bazlı tag'le eşleşenler de gösterilebilir (koleksiyon dışı)
+      data.collections.forEach(c => {
+        c.books.forEach(b => {
+          if (b.tags && b.tags.includes(activeTag) && !(c.tags || []).includes(activeTag)) {
+            bookHits.push({ collection: c, book: b });
+          }
+        });
+      });
+    }
 
     if (q) {
       collections = data.collections.filter(c =>
@@ -291,22 +277,6 @@
       data.collections.forEach(c => {
         c.books.forEach(b => {
           if (b.title.toLowerCase().includes(q) || (b.subtitle || "").toLowerCase().includes(q)) {
-            bookHits.push({ collection: c, book: b });
-          }
-        });
-      });
-    } else if (activeTag === null) {
-      // Tümü: tüm kitaplar tek karma grid
-      allBooksFlat = getAllBooks();
-    } else if (activeTag === COLLECTIONS_VIEW) {
-      // Koleksiyonlar: koleksiyon kartları
-      collections = data.collections;
-    } else {
-      // Etiket filtresi
-      collections = data.collections.filter(c => (c.tags || []).includes(activeTag));
-      data.collections.forEach(c => {
-        c.books.forEach(b => {
-          if (b.tags && b.tags.includes(activeTag) && !(c.tags || []).includes(activeTag)) {
             bookHits.push({ collection: c, book: b });
           }
         });
@@ -321,7 +291,7 @@
         </div>`;
     }
 
-    if (!q && activeTag && activeTag !== COLLECTIONS_VIEW && collections.length === 0 && bookHits.length === 0) {
+    if (!q && activeTag && collections.length === 0 && bookHits.length === 0) {
       return renderTagBar() + `
         <div class="empty">
           <h3>Sonuç bulunamadı</h3>
@@ -362,17 +332,6 @@
         </div>
       </section>` : "";
 
-    const allBooksHtml = allBooksFlat.length ? `
-      <section>
-        <div class="section-head">
-          <h2>Tüm Kitaplar</h2>
-          <span class="muted">${allBooksFlat.length} kitap</span>
-        </div>
-        <div class="books-grid">
-          ${allBooksFlat.map(({collection, book}, i) => renderBookCard(collection, book, i)).join("")}
-        </div>
-      </section>` : "";
-
     const collectionsHtml = collections.length ? `
       <section>
         <div class="section-head">
@@ -395,7 +354,7 @@
         </div>
       </section>` : "";
 
-    return heading + tagBarHtml + continueHtml + favsHtml + allBooksHtml + collectionsHtml + bookHitsHtml;
+    return heading + tagBarHtml + continueHtml + favsHtml + collectionsHtml + bookHitsHtml;
   }
 
   function renderTagBar() {
@@ -403,7 +362,6 @@
     if (tags.length === 0) return "";
     const pills = [
       `<button class="tag-pill ${activeTag === null ? "is-active" : ""}" data-tag="">Tümü</button>`,
-      `<button class="tag-pill ${activeTag === COLLECTIONS_VIEW ? "is-active" : ""}" data-tag="${COLLECTIONS_VIEW}">Koleksiyonlar</button>`,
       ...tags.map(t => `<button class="tag-pill ${activeTag === t ? "is-active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(tagLabel(t))}</button>`)
     ].join("");
     return `<div class="tag-bar" role="tablist" aria-label="Etiket filtresi">${pills}</div>`;
@@ -571,9 +529,9 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               Geri
             </a>
-            <a class="btn" href="${fileUrl}" target="_blank" rel="noopener">
+            <a class="btn" href="${fileUrl}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>
-              Yeni sekmede aç
+              Tarayıcıda aç
             </a>
             <a class="btn primary" href="${fileUrl}" download>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -607,141 +565,264 @@
           </button>
         </div>
         <div class="pdf-container" id="pdf-container">
-          <canvas id="pdf-canvas"></canvas>
           <div class="pdf-status" id="pdf-status">Yükleniyor…</div>
         </div>
       </div>`;
 
-    initPdfReader(fileUrl, cid, bid);
+    initPdfReader(fileUrl, `kutuphane-page-${cid}-${bid}`);
   }
 
-  async function initPdfReader(url, cid, bid) {
+  async function initPdfReader(url, storageKey) {
     if (activeReader) { activeReader.dispose(); activeReader = null; }
 
-    const canvas = document.getElementById("pdf-canvas");
     const container = document.getElementById("pdf-container");
     const status = document.getElementById("pdf-status");
     const pageInput = document.getElementById("pdf-page");
-    const pageCount = document.getElementById("pdf-pagecount");
+    const pageCountEl = document.getElementById("pdf-pagecount");
     const zoomLabel = document.getElementById("pdf-zoom-label");
     const toolbar = document.getElementById("pdf-toolbar");
-    const ctx = canvas.getContext("2d");
 
-    let pdf = null;
-    // Geriye uyum için legacy anahtar formatı korunuyor.
-    const storageKey = `kutuphane-page-${cid}-${bid}`;
-    const initialProgress = getProgress(cid, bid);
+    function fallbackToIframe() {
+      if (toolbar) toolbar.style.display = "none";
+      container.innerHTML = `<iframe class="pdf-frame" src="${url}" title="PDF"></iframe>`;
+    }
+
+    // storageKey formatı: "kutuphane-page-{cid}-{bid}".
+    const skParts = storageKey.replace(/^kutuphane-page-/, "");
+    let progressCid = null, progressBid = null;
+    for (const c of data.collections) {
+      if (skParts.startsWith(c.id + "-")) {
+        const bidPart = skParts.slice(c.id.length + 1);
+        const book = c.books.find(b => b.id === bidPart);
+        if (book) { progressCid = c.id; progressBid = book.id; break; }
+      }
+    }
+    const initialProgress = (progressCid && progressBid) ? getProgress(progressCid, progressBid) : null;
     let currentPage = (initialProgress && initialProgress.page) || parseInt(localStorage.getItem(storageKey) || "1", 10) || 1;
     let scale = 1;
     let fitMode = "width";
-    let renderTask = null;
     let disposed = false;
 
-    pageInput.value = currentPage;
-
-    if (typeof pdfjsLib === "undefined") {
-      fallbackToIframe("PDF.js yüklenemedi.");
-      return;
-    }
+    if (typeof pdfjsLib === "undefined") { fallbackToIframe(); return; }
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-    try {
-      pdf = await pdfjsLib.getDocument(url).promise;
-    } catch (err) {
-      fallbackToIframe("PDF açılamadı, klasik görüntüleyiciye geçildi.");
-      return;
-    }
-    if (disposed) return;
+    // Kaydırmalı sayfa konteyneri oluştur
+    const pagesDiv = document.createElement("div");
+    pagesDiv.className = "pdf-pages";
+    container.insertBefore(pagesDiv, status);
 
-    pageCount.textContent = pdf.numPages;
-    pageInput.max = pdf.numPages;
-    if (currentPage > pdf.numPages) currentPage = 1;
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    if (disposed) return;
-    await renderPage();
-
-    async function renderPage() {
-      if (!pdf || disposed) return;
-      if (renderTask) { try { renderTask.cancel(); } catch (_) {} }
-      status.style.display = "flex";
-      const page = await pdf.getPage(currentPage);
-      if (disposed) return;
-      if (fitMode === "width") {
-        const baseViewport = page.getViewport({ scale: 1 });
-        const cw = Math.max(320, container.clientWidth - 32);
-        scale = Math.max(0.2, cw / baseViewport.width);
-      }
-      const viewport = page.getViewport({ scale });
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(viewport.width * dpr);
-      canvas.height = Math.floor(viewport.height * dpr);
-      canvas.style.width = viewport.width + "px";
-      canvas.style.height = viewport.height + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      try {
-        renderTask = page.render({ canvasContext: ctx, viewport });
-        await renderTask.promise;
-      } catch (e) {
-        if (e && e.name === "RenderingCancelledException") return;
-      }
-      if (disposed) return;
-      status.style.display = "none";
-      pageInput.value = currentPage;
-      zoomLabel.textContent = "%" + Math.round(scale * 100);
-      localStorage.setItem(storageKey, String(currentPage));
-      setProgress(cid, bid, currentPage, pdf.numPages);
-    }
-
-    function go(delta) {
-      if (!pdf) return;
-      const next = Math.min(pdf.numPages, Math.max(1, currentPage + delta));
-      if (next !== currentPage) { currentPage = next; renderPage(); }
-    }
-
-    document.getElementById("pdf-prev").onclick = () => go(-1);
-    document.getElementById("pdf-next").onclick = () => go(1);
-    pageInput.onchange = () => {
-      if (!pdf) return;
-      let n = parseInt(pageInput.value, 10);
-      if (isNaN(n)) n = currentPage;
-      n = Math.min(pdf.numPages, Math.max(1, n));
-      currentPage = n; renderPage();
-    };
-    document.getElementById("pdf-zoom-in").onclick = () => {
-      fitMode = "manual"; scale = Math.min(4, scale * 1.2); renderPage();
-    };
-    document.getElementById("pdf-zoom-out").onclick = () => {
-      fitMode = "manual"; scale = Math.max(0.3, scale / 1.2); renderPage();
-    };
-    document.getElementById("pdf-fit").onclick = () => {
-      fitMode = "width"; renderPage();
-    };
-
-    // Gece modu (PDF rengini ters çevir) — global tercih
+    // Gece modu — global tercih
     const NIGHT_KEY = "kutuphane-pdf-night";
     const nightBtn = document.getElementById("pdf-night");
     let nightOn = localStorage.getItem(NIGHT_KEY) === "1";
     const applyNight = () => {
-      canvas.classList.toggle("pdf-night", nightOn);
-      nightBtn.classList.toggle("is-active", nightOn);
-      nightBtn.title = nightOn ? "Gece modu açık (kapatmak için tıkla)" : "Gece modu (göz dostu)";
+      pagesDiv.classList.toggle("pdf-night", nightOn);
+      if (nightBtn) {
+        nightBtn.classList.toggle("is-active", nightOn);
+        nightBtn.title = nightOn ? "Gece modu açık (kapatmak için tıkla)" : "Gece modu (göz dostu)";
+      }
     };
     applyNight();
-    nightBtn.onclick = () => {
-      nightOn = !nightOn;
-      try { localStorage.setItem(NIGHT_KEY, nightOn ? "1" : "0"); } catch (_) {}
-      applyNight();
+    if (nightBtn) {
+      nightBtn.onclick = () => {
+        nightOn = !nightOn;
+        try { localStorage.setItem(NIGHT_KEY, nightOn ? "1" : "0"); } catch (_) {}
+        applyNight();
+      };
+    }
+
+    let pdf = null;
+    try {
+      pdf = await pdfjsLib.getDocument(url).promise;
+    } catch (err) {
+      fallbackToIframe();
+      return;
+    }
+    if (disposed) return;
+
+    pageCountEl.textContent = pdf.numPages;
+    pageInput.max = pdf.numPages;
+    currentPage = Math.max(1, Math.min(pdf.numPages, currentPage));
+
+    const firstPdfPage = await pdf.getPage(1);
+    if (disposed) return;
+    const baseVP = firstPdfPage.getViewport({ scale: 1 });
+
+    function getScale() {
+      if (fitMode === "width") {
+        const cw = Math.max(320, container.clientWidth - 32);
+        return Math.max(0.2, cw / baseVP.width);
+      }
+      return scale;
+    }
+    scale = getScale();
+
+    const PAGE_GAP = 20;
+    const PAGE_PAD = 20;
+    const initVP = firstPdfPage.getViewport({ scale });
+    const phW = Math.round(initVP.width) + "px";
+    const phH = Math.round(initVP.height) + "px";
+
+    // Her sayfa için wrapper div oluştur
+    const pageWrappers = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "pdf-page-wrapper";
+      wrapper.dataset.page = String(i);
+      wrapper.style.width = phW;
+      wrapper.style.height = phH;
+      pagesDiv.appendChild(wrapper);
+      pageWrappers.push(wrapper);
+    }
+
+    // İlk sayfaya kaydır
+    if (currentPage > 1) {
+      container.scrollTop = PAGE_PAD + (currentPage - 1) * (Math.round(initVP.height) + PAGE_GAP);
+    }
+
+    status.style.display = "none";
+    pageInput.value = currentPage;
+    zoomLabel.textContent = "%" + Math.round(scale * 100);
+
+    // Sayfa render kuyruğu
+    const renderingPages = new Set();
+
+    async function renderPageAt(pageNum) {
+      if (disposed) return;
+      const wrapper = pageWrappers[pageNum - 1];
+      if (!wrapper || wrapper.dataset.rendered === "1" || renderingPages.has(pageNum)) return;
+      const capturedScale = scale;
+      renderingPages.add(pageNum);
+      try {
+        const page = await pdf.getPage(pageNum);
+        if (disposed || scale !== capturedScale || wrapper.dataset.rendered === "1") return;
+        const vp = page.getViewport({ scale: capturedScale });
+        const dpr = window.devicePixelRatio || 1;
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(vp.width * dpr);
+        canvas.height = Math.floor(vp.height * dpr);
+        canvas.style.width = Math.round(vp.width) + "px";
+        canvas.style.height = Math.round(vp.height) + "px";
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        try {
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        } catch (e) {
+          if (e && e.name === "RenderingCancelledException") return;
+          return;
+        }
+        if (disposed || scale !== capturedScale || wrapper.dataset.rendered === "1") return;
+        wrapper.style.width = canvas.style.width;
+        wrapper.style.height = canvas.style.height;
+        wrapper.innerHTML = "";
+        wrapper.appendChild(canvas);
+        wrapper.dataset.rendered = "1";
+      } finally {
+        renderingPages.delete(pageNum);
+      }
+    }
+
+    // IntersectionObserver ile tembel yükleme
+    const renderObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const n = parseInt(entry.target.dataset.page);
+        renderPageAt(n);
+        if (n > 1) renderPageAt(n - 1);
+        if (n < pdf.numPages) renderPageAt(n + 1);
+        if (n > 2) renderPageAt(n - 2);
+        if (n < pdf.numPages - 1) renderPageAt(n + 2);
+      });
+    }, { root: container, rootMargin: "600px 0px" });
+    pageWrappers.forEach(w => renderObserver.observe(w));
+
+    // Scroll ile mevcut sayfa takibi
+    let scrollTimer;
+    const onScroll = () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        if (disposed) return;
+        const cRect = container.getBoundingClientRect();
+        const centerY = cRect.top + cRect.height / 2;
+        let bestPage = currentPage, bestDist = Infinity;
+        pageWrappers.forEach((w, i) => {
+          const r = w.getBoundingClientRect();
+          const dist = Math.abs((r.top + r.height / 2) - centerY);
+          if (dist < bestDist) { bestDist = dist; bestPage = i + 1; }
+        });
+        if (bestPage !== currentPage) {
+          currentPage = bestPage;
+          pageInput.value = currentPage;
+          localStorage.setItem(storageKey, String(currentPage));
+          if (progressCid && progressBid) {
+            setProgress(progressCid, progressBid, currentPage, pdf.numPages);
+          }
+        }
+      }, 80);
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+
+    function scrollToPage(n) {
+      if (!pdf) return;
+      n = Math.max(1, Math.min(pdf.numPages, n));
+      pageWrappers[n - 1].scrollIntoView({ behavior: "smooth", block: "start" });
+      currentPage = n;
+      pageInput.value = n;
+      localStorage.setItem(storageKey, String(n));
+      if (progressCid && progressBid) setProgress(progressCid, progressBid, n, pdf.numPages);
+    }
+
+    document.getElementById("pdf-prev").onclick = () => scrollToPage(currentPage - 1);
+    document.getElementById("pdf-next").onclick = () => scrollToPage(currentPage + 1);
+    pageInput.onchange = () => {
+      let n = parseInt(pageInput.value, 10);
+      if (isNaN(n)) n = currentPage;
+      scrollToPage(n);
+    };
+
+    // Zoom değişince tüm sayfaları yeniden render et
+    async function rerender() {
+      if (!pdf || disposed) return;
+      scale = getScale();
+      zoomLabel.textContent = "%" + Math.round(scale * 100);
+      const vp = firstPdfPage.getViewport({ scale });
+      const w = Math.round(vp.width) + "px";
+      const h = Math.round(vp.height) + "px";
+      pageWrappers.forEach(wrapper => {
+        wrapper.dataset.rendered = "";
+        wrapper.style.width = w;
+        wrapper.style.height = h;
+        wrapper.innerHTML = "";
+      });
+      await new Promise(r => requestAnimationFrame(r));
+      const cRect = container.getBoundingClientRect();
+      pageWrappers.forEach((wrapper, i) => {
+        const r = wrapper.getBoundingClientRect();
+        if (r.bottom >= cRect.top - 800 && r.top <= cRect.bottom + 800) {
+          renderPageAt(i + 1);
+        }
+      });
+    }
+
+    document.getElementById("pdf-zoom-in").onclick = () => {
+      fitMode = "manual"; scale = Math.min(4, scale * 1.2); rerender();
+    };
+    document.getElementById("pdf-zoom-out").onclick = () => {
+      fitMode = "manual"; scale = Math.max(0.3, scale / 1.2); rerender();
+    };
+    document.getElementById("pdf-fit").onclick = () => {
+      fitMode = "width"; rerender();
     };
 
     const onKey = (e) => {
       if (disposed) return;
       const t = e.target;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
-      if (e.key === "ArrowLeft" || e.key === "PageUp") { go(-1); e.preventDefault(); }
-      else if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { go(1); e.preventDefault(); }
-      else if (e.key === "+" || e.key === "=") { fitMode = "manual"; scale = Math.min(4, scale * 1.2); renderPage(); }
-      else if (e.key === "-") { fitMode = "manual"; scale = Math.max(0.3, scale / 1.2); renderPage(); }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") { scrollToPage(currentPage - 1); e.preventDefault(); }
+      else if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { scrollToPage(currentPage + 1); e.preventDefault(); }
+      else if (e.key === "+" || e.key === "=") { fitMode = "manual"; scale = Math.min(4, scale * 1.2); rerender(); }
+      else if (e.key === "-") { fitMode = "manual"; scale = Math.max(0.3, scale / 1.2); rerender(); }
     };
     document.addEventListener("keydown", onKey);
 
@@ -749,12 +830,12 @@
     const onResize = () => {
       if (fitMode !== "width") return;
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(renderPage, 150);
+      resizeTimer = setTimeout(rerender, 200);
     };
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
 
-    // Dokunmatik kaydırma — yatay swipe ile sayfa değiştir
+    // Yatay swipe → önceki/sonraki sayfa; dikey → doğal kaydırma
     let touchStartX = null, touchStartY = null, touchStartT = 0;
     const onTouchStart = (e) => {
       if (e.touches.length !== 1) { touchStartX = null; return; }
@@ -769,9 +850,8 @@
       const dy = t.clientY - touchStartY;
       const dt = Date.now() - touchStartT;
       touchStartX = null;
-      // dikey kaydırmadan ayır: yatay > dikey * 1.5, hızlı, 60+ piksel
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 500) {
-        if (dx < 0) go(1); else go(-1);
+        if (dx < 0) scrollToPage(currentPage + 1); else scrollToPage(currentPage - 1);
       }
     };
     container.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -780,7 +860,8 @@
     activeReader = {
       dispose() {
         disposed = true;
-        if (renderTask) { try { renderTask.cancel(); } catch (_) {} }
+        renderObserver.disconnect();
+        container.removeEventListener("scroll", onScroll);
         document.removeEventListener("keydown", onKey);
         window.removeEventListener("resize", onResize);
         window.removeEventListener("orientationchange", onResize);
@@ -788,11 +869,6 @@
         container.removeEventListener("touchend", onTouchEnd);
       }
     };
-
-    function fallbackToIframe(msg) {
-      if (toolbar) toolbar.style.display = "none";
-      container.innerHTML = `<iframe class="pdf-frame" src="${url}" title="PDF"></iframe>`;
-    }
   }
 
   function viewNotFound() {
@@ -838,8 +914,6 @@
   searchInput.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-      // Arama kullanıldığında etiket filtresini sıfırla; arama temizlenince "Tümü"ye dönülür.
-      if (searchInput.value.trim()) activeTag = null;
       // Arama kullanıldığında her zaman ana sayfaya geç
       if (location.hash !== "#/") {
         location.hash = "#/";

@@ -574,16 +574,46 @@ main { padding: 40px 28px 80px; }
   border-radius: var(--radius);
   background: #f0e8d8;
   box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 16px;
 }
 [data-theme="dark"] .pdf-container { background: #0f0c08; }
-#pdf-canvas {
-  display: block;
+
+.pdf-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 16px;
+}
+.pdf-page-wrapper {
+  flex-shrink: 0;
+  position: relative;
   box-shadow: 0 6px 22px rgba(0,0,0,0.18);
+  background: linear-gradient(
+    110deg,
+    var(--skeleton-1, #d6cdb8) 18%,
+    var(--skeleton-2, #ece3cd) 38%,
+    var(--skeleton-1, #d6cdb8) 58%
+  );
+  background-size: 220% 100%;
+  animation: cover-shimmer 1.4s linear infinite;
+}
+.pdf-page-wrapper[data-rendered="1"] {
+  background: none;
+  animation: none;
+}
+[data-theme="dark"] .pdf-page-wrapper {
+  --skeleton-1: #2a221a;
+  --skeleton-2: #3a3024;
+}
+[data-theme="dark"] .pdf-page-wrapper[data-rendered="1"] {
+  background: none;
+}
+.pdf-page-wrapper canvas {
+  display: block;
   background: #fff;
+}
+[data-theme="dark"] .pdf-page-wrapper canvas {
+  filter: invert(0.92) hue-rotate(180deg);
 }
 .pdf-status {
   position: absolute;
@@ -676,7 +706,7 @@ main { padding: 40px 28px 80px; }
   .pdf-sep { display: none; }
 
   .pdf-container, .pdf-frame { height: 75vh; min-height: 460px; }
-  .pdf-container { padding: 10px; -webkit-overflow-scrolling: touch; }
+  .pdf-container { -webkit-overflow-scrolling: touch; }
 }
 
 /* Küçük telefon */
@@ -691,8 +721,10 @@ main { padding: 40px 28px 80px; }
   .reader-actions { gap: 6px; }
   .btn { padding: 8px 11px; font-size: 12px; }
   /* uzun "Yeni sekmede aç" yazısını ikon-only yap */
-  .reader-actions .btn:nth-child(2) { font-size: 0; padding: 8px 12px; }
+  .reader-actions .btn:nth-child(2) span,
+  .reader-actions .btn:nth-child(2) { font-size: 0; }
   .reader-actions .btn:nth-child(2) svg { margin: 0; }
+  .reader-actions .btn:nth-child(2) { padding: 8px 12px; }
 
   .pdf-btn { width: 40px; height: 40px; }
   .pdf-btn-text { padding: 0 10px; }
@@ -932,9 +964,9 @@ main { padding: 40px 28px 80px; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* PDF canvas yumuşak fade */
-#pdf-canvas {
-  animation: canvas-fade 380ms ease both;
+/* PDF sayfa yumuşak fade */
+.pdf-page-wrapper canvas {
+  animation: canvas-fade 250ms ease both;
 }
 @keyframes canvas-fade {
   from { opacity: 0; }
@@ -999,6 +1031,9 @@ main { padding: 40px 28px 80px; }
   overflow: hidden;
   transition: max-height .35s ease, opacity .25s ease;
 }
+.install-banner:not([hidden]) {
+  max-height: 0;
+}
 .install-banner.is-visible {
   max-height: 200px;
   opacity: 1;
@@ -1043,7 +1078,7 @@ main { padding: 40px 28px 80px; }
 }
 
 /* ---------- PDF gece modu ---------- */
-#pdf-canvas.pdf-night {
+.pdf-pages.pdf-night canvas {
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95);
 }
 .pdf-btn.is-active {
